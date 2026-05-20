@@ -6,7 +6,7 @@ requires = [
 ]
 
 [project]
-name = "trilaterate_moor"
+name = "trilatmoor"
 description = "Python package for seafloor mooring trilateration using acoustic ranging"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -25,14 +25,17 @@ version = "0.1.0"
 dynamic = [
   "dependencies",
 ]
-urls.documentation = "https://github.com/eleanorfrajka/trilaterate_moor"
-urls.homepage = "https://github.com/eleanorfrajka/trilaterate_moor"
-urls.repository = "https://github.com/eleanorfrajka/trilaterate_moor"
+urls.documentation = "https://github.com/eleanorfrajka/TrilatMoor"
+urls.homepage = "https://github.com/eleanorfrajka/TrilatMoor"
+urls.repository = "https://github.com/eleanorfrajka/TrilatMoor"
+
+[project.scripts]
+trilatmoor = "trilatmoor.cli:main"
 
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["trilaterate_moor"]
+include = ["trilatmoor"]
 
 [tool.setuptools.dynamic]
 dependencies = { file = [

@@ -1,11 +1,24 @@
 cff-version: 1.2.0
-message: "This is just a demo of CITATION.cff.  You do not need to cite this software."
+message: "If you use this software, please cite it as below."
+title: "trilatmoor: Python package for seafloor mooring trilateration using acoustic ranging"
 authors:
 - family-names: Frajka-Williams
   given-names: Eleanor
   orcid: https://orcid.org/0000-0001-8773-7838
   affiliation: University of Hamburg, Bundesstraße 53, 20146 Hamburg, Germany
-title: m142
-version: 0.0.0
-date-released: 2025-07-28
-url: https://github.com/eleanorfrajka/m142
+version: 0.1.0
+date-released: 2024-05-20
+url: https://github.com/eleanorfrajka/TrilatMoor
+repository-code: https://github.com/eleanorfrajka/TrilatMoor
+abstract: "Python package for determining seafloor mooring anchor positions using acoustic trilateration from ship-based range measurements. Originally developed by the RAPID 26°N project in Matlab."
+keywords:
+- oceanography
+- mooring
+- trilateration
+- acoustic ranging
+- seafloor positioning
+- RAPID
+license: MIT
+references:
+- type: software
+  title: "Python implementation of MATLAB algorithms developed for RAPID mooring operations"
