@@ -240,3 +240,4 @@ matlab/
 
 # Third-party dship module
 scripts/dship.py
+.claude/settings.local.json
