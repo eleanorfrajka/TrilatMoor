@@ -3,7 +3,7 @@
 
 Usage:
     trilatmoor -c survey.txt -o output_name
-    trilatmoor --compute survey.txt --output output_name
+    trilatmoor --config survey.txt --output output_name
     trilatmoor --multi survey1.txt survey2.txt -o multi_plot
 """
 

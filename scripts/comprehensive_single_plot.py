@@ -7,12 +7,12 @@ import os
 import glob
 import matplotlib.pyplot as plt
 import numpy as np
-from trilaterate_moor import (
+from trilatmoor import (
     solve_anchor_position,
     dec2deg,
     load_bathymetry_netcdf_subsampled,
 )
-from trilaterate_moor.utilities import horizontal_range, vincenty_forward
+from trilatmoor.utilities import horizontal_range, vincenty_forward
 
 
 def parse_data_file(file_path):
@@ -41,7 +41,7 @@ def parse_data_file(file_path):
         else:
             # Parse survey data line
             parts = line.split()
-            if len(parts) >= 6:
+            if len(parts) >= 7:
                 date_time = f"{parts[0]} {parts[1]}"
                 range_val = float(parts[2])
                 lat_deg = float(parts[3])

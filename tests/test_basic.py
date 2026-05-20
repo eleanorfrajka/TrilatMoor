@@ -8,7 +8,7 @@ import sys
 
 sys.path.insert(0, ".")
 
-from trilaterate_moor import parse_triangulation_file, solve_anchor_position, dec2deg
+from trilatmoor import parse_triangulation_file, solve_anchor_position, dec2deg
 
 
 def main():

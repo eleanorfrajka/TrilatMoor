@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Process all FC triangulation sites and generate plots.
-"""
+"""Process all FC triangulation sites and generate plots."""
 
 import sys
 import os
@@ -12,7 +11,7 @@ import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend
 import matplotlib.pyplot as plt
 
-from trilaterate_moor import (
+from trilatmoor import (
     parse_triangulation_file,
     solve_anchor_position,
     plot_trilateration_survey,

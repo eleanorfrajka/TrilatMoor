@@ -11,7 +11,7 @@ Based on the MATLAB run_anchors.m workflow.
 
 import sys
 import matplotlib.pyplot as plt
-from trilaterate_moor import (
+from trilatmoor import (
     parse_triangulation_file,
     solve_anchor_position,
     dec2deg,
@@ -20,8 +20,7 @@ from trilaterate_moor import (
 
 
 def main():
-    """Main example function showing trilateration workflow.
-    """
+    """Main example function showing trilateration workflow."""
     # Real triangulation file from the data directory
     filename = "data/GB3LZ_triangulation.txt"
 

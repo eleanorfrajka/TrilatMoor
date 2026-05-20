@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Test the plotting functionality of trilaterate_moor package.
-"""
+"""Test the plotting functionality of trilaterate_moor package."""
 
 import sys
 
@@ -11,7 +10,7 @@ import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend for testing
 import matplotlib.pyplot as plt
 
-from trilaterate_moor import (
+from trilatmoor import (
     parse_triangulation_file,
     solve_anchor_position,
     plot_trilateration_survey,

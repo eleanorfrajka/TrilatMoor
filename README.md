@@ -20,14 +20,14 @@ pip install -e .
 ### Command Line Usage
 
 ```bash
-# Process a single survey
-trilatmoor -c examples/data/FC1_triangulation.txt -o FC1_results
+# Process a single survey (replace with your survey file path)
+trilatmoor -c path/to/survey.txt -o survey_results
 
-# Process multiple surveys  
-trilatmoor --multi data/dsG*.txt -o G_series_results
+# Process multiple surveys matching a pattern
+trilatmoor --multi path/to/surveys/dsG*.txt -o G_series_results
 
 # With bathymetry data
-trilatmoor -c survey.txt -o results --bathy-dir bathymetry --bathy-source gebco2025
+trilatmoor -c path/to/survey.txt -o results --bathy-dir bathymetry --bathy-source gebco2025
 ```
 
 ### Python API Usage

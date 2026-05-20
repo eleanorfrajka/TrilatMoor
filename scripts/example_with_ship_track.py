@@ -18,10 +18,10 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from trilaterate_moor import parse_triangulation_file, solve_anchor_position, dec2deg
+from trilatmoor import parse_triangulation_file, solve_anchor_position, dec2deg
 
 if HAS_MATPLOTLIB:
-    from trilaterate_moor import plot_trilateration_survey
+    from trilatmoor import plot_trilateration_survey
 
 # Import the converter
 from matlab_converter import convert_matlab_ship_track

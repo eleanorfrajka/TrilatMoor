@@ -270,18 +270,18 @@ def load_ship_track_netcdf(
     if (time_start is not None or time_end is not None) and time_var is not None:
         try:
             if time_start is not None and time_end is not None:
-                ds = ds.sel(time=slice(time_start, time_end))
+                ds = ds.sel({time_var: slice(time_start, time_end)})
             elif time_start is not None:
-                ds = ds.sel(time=slice(time_start, None))
+                ds = ds.sel({time_var: slice(time_start, None)})
             elif time_end is not None:
-                ds = ds.sel(time=slice(None, time_end))
+                ds = ds.sel({time_var: slice(None, time_end)})
         except Exception as e:
             print(f"Warning: Time filtering failed: {e}. Loading full dataset.")
 
     # Apply temporal subsampling if requested
     if subsample_minutes > 0 and time_var is not None:
         # Resample to specified interval (use 'min' for minutes)
-        ds_resampled = ds.resample(time=f"{subsample_minutes}min").first()
+        ds_resampled = ds.resample({time_var: f"{subsample_minutes}min"}).first()
 
         # Extract position data from resampled dataset
         ship_track = {
@@ -663,9 +663,13 @@ def _add_position_labels(ax, triang_data: dict, solution: dict):
     anchor_lon = solution["anchor_lon"]
 
     _, _, lat_str = dec2deg(anchor_lat)
-    _, _, lon_str = dec2deg(abs(anchor_lon))
+    _, _, lon_str = dec2deg(anchor_lon)
 
-    position_text = f"{lat_str}N\n{lon_str}W"
+    # Determine hemispheres
+    lat_hemisphere = "N" if anchor_lat >= 0 else "S"
+    lon_hemisphere = "E" if anchor_lon >= 0 else "W"
+
+    position_text = f"{lat_str}{lat_hemisphere}\n{lon_str}{lon_hemisphere}"
 
     # Place label offset from anchor position
     xlim = ax.get_xlim()
@@ -772,7 +776,7 @@ def parse_survey_file(file_path: str) -> Tuple[Dict, List]:
         else:
             # Parse survey data line
             parts = line.split()
-            if len(parts) >= 6:
+            if len(parts) >= 7:
                 date_time = f"{parts[0]} {parts[1]}"
                 range_val = float(parts[2])
                 lat_deg = float(parts[3])

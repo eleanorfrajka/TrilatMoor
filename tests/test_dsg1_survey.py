@@ -6,7 +6,6 @@ and validates the results against expected values.
 """
 
 import pytest
-import numpy as np
 from pathlib import Path
 
 import trilatmoor
@@ -48,7 +47,7 @@ class TestDsG1Survey:
     def test_dsg1_data_parsing(self, dsg1_data_file):
         """Test that dsG1 survey file is parsed correctly."""
         triang_data = trilatmoor.parse_triangulation_file(str(dsg1_data_file))
-        
+
         # Hard-coded expected values from dsG1_survey.txt
         assert triang_data["loc_name"] == "dsG1"
         assert triang_data["release_height"] == 7.0
@@ -60,18 +59,18 @@ class TestDsG1Survey:
     def test_dsg1_anchor_solution(self, dsg1_data_file):
         """Test that dsG1 anchor position solution matches hard-coded expected results."""
         triang_data, solution = trilatmoor.process_survey_file(str(dsg1_data_file))
-        
+
         # Test anchor position - exact values from dsG1_survey.txt
         assert abs(solution["anchor_lat"] - 65.58977474) < 1e-6
         assert abs(solution["anchor_lon"] - (-29.46241174)) < 1e-6
-        
+
         # Test fallback distance
         assert abs(solution["fallback_distance"] - 220.20489380718294) < 0.01
-        
-        # Test residual statistics  
+
+        # Test residual statistics
         assert abs(solution["max_residual"] - 87.419) < 0.01
         assert abs(solution["rms_residual"] - 65.318) < 0.01
-        
+
         # Test individual residuals
         expected_residuals = [49.54, 50.116, 87.419, 66.767]
         assert len(solution["residuals"]) == 4  # One zero range filtered out
@@ -81,15 +80,15 @@ class TestDsG1Survey:
     def test_dsg1_solution_quality(self, dsg1_data_file):
         """Test that dsG1 solution quality metrics are reasonable."""
         triang_data, solution = trilatmoor.process_survey_file(str(dsg1_data_file))
-        
+
         # Position should be in reasonable range for North Atlantic
         assert 60 < solution["anchor_lat"] < 70  # North latitude
         assert -35 < solution["anchor_lon"] < -25  # West longitude
-        
+
         # Should have valid residuals
         assert len(solution["residuals"]) > 0
         assert all(r >= 0 for r in solution["residuals"])
-        
+
         # RMS should be positive
         assert solution["rms_residual"] > 0
         assert solution["max_residual"] >= solution["rms_residual"]
@@ -97,11 +96,11 @@ class TestDsG1Survey:
     def test_dsg1_coordinate_conversion(self, dsg1_data_file):
         """Test coordinate conversion functionality with dsG1 results."""
         triang_data, solution = trilatmoor.process_survey_file(str(dsg1_data_file))
-        
+
         # Test degree/minute conversion
         lat_deg, lat_min, lat_str = trilatmoor.dec2deg(solution["anchor_lat"])
         lon_deg, lon_min, lon_str = trilatmoor.dec2deg(abs(solution["anchor_lon"]))
-        
+
         # Should be valid degree/minute format
         assert isinstance(lat_deg, int)
         assert isinstance(lon_deg, int)
@@ -114,10 +113,10 @@ class TestDsG1Survey:
         """End-to-end test of dsG1 processing workflow."""
         # Parse file
         triang_data = trilatmoor.parse_triangulation_file(str(dsg1_data_file))
-        
+
         # Solve anchor position
         solution = trilatmoor.solve_anchor_position(triang_data)
-        
+
         # Verify we got a valid solution
         assert "anchor_lat" in solution
         assert "anchor_lon" in solution
@@ -125,7 +124,7 @@ class TestDsG1Survey:
         assert "residuals" in solution
         assert "rms_residual" in solution
         assert "max_residual" in solution
-        
+
         # Verify solution is reasonable
         assert solution["anchor_lat"] is not None
         assert solution["anchor_lon"] is not None
@@ -135,4 +134,5 @@ class TestDsG1Survey:
 if __name__ == "__main__":
     # Allow running as script for debugging
     import sys
+
     sys.exit(pytest.main([__file__, "-v"]))

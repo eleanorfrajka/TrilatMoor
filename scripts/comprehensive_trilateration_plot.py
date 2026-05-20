@@ -8,8 +8,8 @@ import glob
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.gridspec import GridSpec
-from trilaterate_moor import solve_anchor_position, plot_trilateration_survey
-from trilaterate_moor import load_bathymetry_netcdf_subsampled
+from trilatmoor import solve_anchor_position, plot_trilateration_survey
+from trilatmoor import load_bathymetry_netcdf_subsampled
 
 
 def parse_data_file(file_path):
@@ -38,7 +38,7 @@ def parse_data_file(file_path):
         else:
             # Parse survey data line
             parts = line.split()
-            if len(parts) >= 6:
+            if len(parts) >= 7:
                 date_time = f"{parts[0]} {parts[1]}"
                 range_val = float(parts[2])
                 lat_deg = float(parts[3])
