@@ -1,0 +1,83 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=42",
+  "wheel",
+]
+
+[project]
+name = "trilaterate_moor"
+description = "Python package for seafloor mooring trilateration using acoustic ranging"
+readme = "README.md"
+license = { file = "LICENSE" }
+maintainers = [
+  { name = "Eleanor Frajka-Williams", email = "eleanorfrajka@gmail.com" },
+]
+requires-python = ">=3.9"
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+version = "0.1.0"
+dynamic = [
+  "dependencies",
+]
+urls.documentation = "https://github.com/eleanorfrajka/trilaterate_moor"
+urls.homepage = "https://github.com/eleanorfrajka/trilaterate_moor"
+urls.repository = "https://github.com/eleanorfrajka/trilaterate_moor"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["trilaterate_moor"]
+
+[tool.setuptools.dynamic]
+dependencies = { file = [
+  "requirements.txt",
+] }
+readme = { file = "README.md", content-type = "text/markdown" }
+
+
+[tool.check-manifest]
+ignore = [
+  "docs",
+  "docs/*",
+  "notebooks",
+  "notebooks/*",
+  "tests",
+  "tests/*",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.ruff]
+# …any other top‑level settings you use (extend, cache-dir, line-length, exclude, etc.)…
+
+[tool.ruff.lint]
+select = [
+  "D",       # pydocstyle
+  "E",       # pycodestyle errors
+  "F",       # pyflakes errors
+  "W",       # pycodestyle warnings
+  "C90",     # mccabe complexity
+  "ANN",     # type annotations
+  "B",       # flake8-bugbear
+  "BLE",     # bleach checks
+  "TRY",     # tryceratops
+  "ARG",     # flake8-arguments
+  "SLF",     # flake8-self
+]
+ignore = [
+  "D107",    # missing docstring in __init__
+  "D203",    # 1 blank line required before class docstring
+  "D213",    # multi-line summary docstring style
+  "D401",    # first line should be in imperative mood
+  "E501",    # line‑length
+  "PLR0913", # too many arguments
+  "C901",    # complexity
+]
