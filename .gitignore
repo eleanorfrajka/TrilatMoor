@@ -218,3 +218,26 @@ figs/*.jpg
 figs/*.jpeg
 *.nc
 *.netcdf
+
+# Data files (survey data, large datasets)
+data/
+
+# Research-specific notebooks (keep only demo_G1.ipynb)
+notebooks/demo.ipynb
+notebooks/demo_G2.ipynb
+notebooks/demo_G3.ipynb
+notebooks/demo_K1.ipynb
+notebooks/demo_K2.ipynb
+notebooks/demo_K3.ipynb
+
+# MATLAB files and generated outputs
+matlab/
+*.mat
+*.fig
+*.asv
+*.slx
+*.mlx
+
+# Third-party dship module
+scripts/dship.py
+.claude/settings.local.json
