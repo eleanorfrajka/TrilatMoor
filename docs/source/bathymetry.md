@@ -26,17 +26,10 @@ Coordinate axes may be in ascending or descending order — both are handled.
 
 ## CLI usage
 
-Pass the file directly:
+Point to a directory containing the NetCDF file and specify the source name:
 
 ```bash
-trilatmoor -c survey.txt -o results \
-    --bathy-file /data/GEBCO_2025.nc
-```
-
-Or scan a directory for a named source:
-
-```bash
-trilatmoor -c survey.txt -o results \
+trilatmoor -c survey.txt -o results/ --output dsG1 \
     --bathy-dir /data/bathymetry --bathy-source gebco2025
 ```
 

@@ -6,7 +6,7 @@ The most common workflow: process one triangulation file, write a plot and a
 position text file.
 
 ```bash
-trilatmoor -c examples/data/dsG1_triangulation.txt -o results/dsG1
+trilatmoor -c examples/data/dsG1_triangulation.txt -o results/ --output dsG1
 ```
 
 This creates:
@@ -18,24 +18,17 @@ This creates:
 
 ### Adding bathymetry
 
-Pass the path to a GEBCO or ETOPO NetCDF file with `--bathy-file`:
+Point to a directory containing the GEBCO or ETOPO NetCDF file:
 
 ```bash
-trilatmoor -c survey.txt -o results/dsG1 \
-    --bathy-file /data/GEBCO_2025.nc
-```
-
-Or point to a directory and specify the source name:
-
-```bash
-trilatmoor -c survey.txt -o results/dsG1 \
+trilatmoor -c survey.txt -o results/ --output dsG1 \
     --bathy-dir /data/bathymetry --bathy-source gebco2025
 ```
 
 ### Adding a ship track
 
 ```bash
-trilatmoor -c survey.txt -o results/dsG1 \
+trilatmoor -c survey.txt -o results/ --output dsG1 \
     --ship-track /data/merian_track.nc \
     --time-interval-hr -12 12
 ```
@@ -48,24 +41,23 @@ survey file; ±12 h is the default.
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-c / --config` | required | Survey file path |
-| `-o / --output` | survey `Loc_name` | Output base name |
-| `--output-dir` | current directory | Directory for output files |
-| `--sound-speed` | 1503 | True sound speed (m/s) |
-| `--bathy-file` | — | Specific bathymetry NetCDF file |
-| `--bathy-dir` | — | Directory containing bathymetry files |
-| `--bathy-source` | `auto` | `gebco2025`, `gebco2023`, `etopo`, `auto` |
+| `-o / --output-directory` | `.` | Directory for output files |
+| `--output` | survey `Loc_name` | Base filename (no extension) |
+| `--sound-speed` | — | True sound speed in m/s (overrides file value) |
+| `--bathy-dir` | — | Directory containing bathymetry NetCDF files |
+| `--bathy-source` | `gebco2025` | `gebco2025`, `gebco2023`, `gebco`, `etopo`, `auto` |
 | `--ship-track` | — | Ship track NetCDF file |
 | `--time-interval-hr` | `-12 12` | Hours around survey for ship track |
-| `--figsize` | `10 8` | Figure size in inches |
+| `--figsize` | matplotlib default | Figure size in inches, e.g. `--figsize 10 8` |
 | `--no-title` | false | Suppress the figure title |
 | `--no-legend` | false | Suppress the legend |
-| `--format` | `all` | `all`, `png`, or `txt` |
+| `--format` | `all` | `all`, `png`, `grid` (`--multi` only), or `txt` |
 
 ## CLI — multiple surveys
 
 ```bash
 trilatmoor --multi data/dsG1.txt data/dsG2.txt data/dsG3.txt \
-    -o results/G_series
+    -o results/ --output G_series
 ```
 
 Generates a single overview map showing all anchor positions and a summary

@@ -80,10 +80,12 @@ def write_anchor_position_file(
 
         f.write("Individual Fix Residuals:\n")
         for i, residual in enumerate(solution["residuals"]):
-            f.write(f"  Fix {i+1}: {residual:.1f} m\n")
+            f.write(f"  Fix {i + 1}: {residual:.1f} m\n")
 
         f.write("\nSurvey Parameters:\n")
-        f.write(f"  Water depth at launch: {triang_data['water_depth_anchor_launch']} m\n")
+        f.write(
+            f"  Water depth at launch: {triang_data['water_depth_anchor_launch']} m\n"
+        )
         if gebco_depth is not None:
             f.write(f"  GEBCO depth at anchor: {gebco_depth:.0f} m\n")
         f.write(f"  Release height: {triang_data['release_height']} m\n")
@@ -176,7 +178,9 @@ def process_single_survey(
     """
     try:
         if format == "grid":
-            print("Note: 'grid' format does not apply to single-survey mode; writing png and txt.")
+            print(
+                "Note: 'grid' format does not apply to single-survey mode; writing png and txt."
+            )
             format = "all"
         save_png = format in ("all", "png")
         save_txt = format in ("all", "txt")
@@ -241,7 +245,10 @@ def process_single_survey(
         if save_txt:
             print(f"Writing position data: {pos_file}")
             write_anchor_position_file(
-                pos_file, triang_data["loc_name"], triang_data, solution,
+                pos_file,
+                triang_data["loc_name"],
+                triang_data,
+                solution,
                 gebco_depth=gebco_depth,
             )
 
@@ -258,7 +265,9 @@ def process_single_survey(
             print(f"  GEBCO depth at anchor: {gebco_depth:.0f}m")
         print(f"  Fallback: {solution['fallback_distance']:.0f}m")
         print(f"  RMS residual: {solution['rms_residual']:.1f}m")
-        generated = [f for f, flag in [(plot_file, save_png), (pos_file, save_txt)] if flag]
+        generated = [
+            f for f, flag in [(plot_file, save_png), (pos_file, save_txt)] if flag
+        ]
         print(f"  Files generated: {', '.join(generated)}")
 
         return True
@@ -380,7 +389,7 @@ def process_multiple_surveys(
                 f.write(
                     f"{'Location':<10} {'Position':<30} {'Fallback':>9} {'RMS':>7} {'Quality':<9}\n"
                 )
-                f.write(f"{'-'*70}\n")
+                f.write(f"{'-' * 70}\n")
                 for loc_name, triang_data, solution in survey_results:
                     lat = solution["anchor_lat"]
                     lon = solution["anchor_lon"]
@@ -470,9 +479,9 @@ Examples:
 
     parser.add_argument(
         "--bathy-dir",
-        default="data/bathymetry",
+        default=None,
         metavar="DIR",
-        help="Directory containing bathymetry NetCDF files (default: data/bathymetry)",
+        help="Directory containing bathymetry NetCDF files",
     )
 
     parser.add_argument(
@@ -540,8 +549,10 @@ Examples:
             print(f"Error: Input file not found: {file_path}")
             sys.exit(1)
 
-    # Resolve bathymetry file (None if directory not found or empty)
-    resolved_bathy = _resolve_bathy(args.bathy_dir, args.bathy_source)
+    # Resolve bathymetry file (None if no directory specified or directory not found)
+    resolved_bathy = (
+        _resolve_bathy(args.bathy_dir, args.bathy_source) if args.bathy_dir else None
+    )
 
     # Process based on mode
     success = False

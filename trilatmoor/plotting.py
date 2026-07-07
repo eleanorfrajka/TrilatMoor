@@ -11,7 +11,9 @@ from typing import Dict, List, Optional, Tuple, Union
 from .utilities import vincenty_forward
 
 
-def query_depth_at_position(netcdf_path: str, lat: float, lon: float) -> Optional[float]:
+def query_depth_at_position(
+    netcdf_path: str, lat: float, lon: float
+) -> Optional[float]:
     """Query bathymetric depth at a specific lat/lon from a NetCDF file.
 
     Uses xarray lazy loading and nearest-neighbour selection. Reads only the
@@ -54,24 +56,31 @@ def query_depth_at_position(netcdf_path: str, lat: float, lon: float) -> Optiona
             ds.close()
             return None
 
-        value = (
-            ds[depth_var]
-            .sel({lat_var: lat, lon_var: lon}, method="nearest")
-            .values.item()
-        )
-        ds.close()
+        try:
+            value = (
+                ds[depth_var]
+                .sel({lat_var: lat, lon_var: lon}, method="nearest")
+                .values.item()
+            )
+        finally:
+            ds.close()
 
         if np.isnan(value):
             return None
 
-        # GEBCO uses negative elevation for ocean; return positive depth.
-        return float(abs(value))
+        # elevation/topo/z: positive-up (GEBCO convention). Negative = ocean.
+        if depth_var in {"elevation", "topo", "z"}:
+            return None if value >= 0 else float(-value)
+        # depth/bathymetry: positive-down. Non-positive = land or invalid.
+        return float(value) if value > 0 else None
 
     except Exception:
         return None
 
 
-def _extract_depth_from_dict(bathymetry: dict, lat: float, lon: float) -> Optional[float]:
+def _extract_depth_from_dict(
+    bathymetry: dict, lat: float, lon: float
+) -> Optional[float]:
     """Nearest-neighbour depth lookup from an already-loaded bathymetry dict."""
     lat_arr = bathymetry["lat"]
     lon_arr = bathymetry["lon"]
@@ -83,7 +92,7 @@ def _extract_depth_from_dict(bathymetry: dict, lat: float, lon: float) -> Option
     lat_idx = int(np.argmin(np.abs(lat_arr - lat)))
     lon_idx = int(np.argmin(np.abs(lon_arr - lon)))
     value = float(depth_arr[lat_idx, lon_idx])
-    return None if np.isnan(value) else abs(value)
+    return None if (np.isnan(value) or value <= 0) else value
 
 
 def load_bathymetry_netcdf_subsampled(
@@ -262,23 +271,26 @@ def load_bathymetry_netcdf(
         )
 
     # Subset to region before loading into memory — critical for large global files.
-    # Some files store lat descending (90→−90); slice() must match the axis order.
+    # Only possible for 1-D coordinate axes (regular grids). Curvilinear grids
+    # (nav_lat/nav_lon are 2-D) are loaded in full and clipped after extraction.
     if lon_bounds is not None and lat_bounds is not None:
         lat_vals = ds[lat_var].values
         lon_vals = ds[lon_var].values
-        lat_desc = len(lat_vals) > 1 and float(lat_vals[0]) > float(lat_vals[-1])
-        lon_desc = len(lon_vals) > 1 and float(lon_vals[0]) > float(lon_vals[-1])
-        lat_slice = (
-            slice(lat_bounds[1], lat_bounds[0])
-            if lat_desc
-            else slice(lat_bounds[0], lat_bounds[1])
-        )
-        lon_slice = (
-            slice(lon_bounds[1], lon_bounds[0])
-            if lon_desc
-            else slice(lon_bounds[0], lon_bounds[1])
-        )
-        ds = ds.sel({lon_var: lon_slice, lat_var: lat_slice})
+        if lat_vals.ndim == 1 and lon_vals.ndim == 1:
+            # Some files store lat descending (90→−90); slice() must match axis order.
+            lat_desc = len(lat_vals) > 1 and float(lat_vals[0]) > float(lat_vals[-1])
+            lon_desc = len(lon_vals) > 1 and float(lon_vals[0]) > float(lon_vals[-1])
+            lat_slice = (
+                slice(lat_bounds[1], lat_bounds[0])
+                if lat_desc
+                else slice(lat_bounds[0], lat_bounds[1])
+            )
+            lon_slice = (
+                slice(lon_bounds[1], lon_bounds[0])
+                if lon_desc
+                else slice(lon_bounds[0], lon_bounds[1])
+            )
+            ds = ds.sel({lon_var: lon_slice, lat_var: lat_slice})
 
     # Extract data
     lon = ds[lon_var].values
@@ -543,8 +555,8 @@ def plot_trilateration_survey(
         _lon_half = _lat_half * _fig_aspect / _cos_lat
     else:
         _lat_half = _lon_half * _cos_lat / _fig_aspect
-    west  = _center_lon - _lon_half
-    east  = _center_lon + _lon_half
+    west = _center_lon - _lon_half
+    east = _center_lon + _lon_half
     south = _center_lat - _lat_half
     north = _center_lat + _lat_half
 
@@ -578,7 +590,8 @@ def plot_trilateration_survey(
     if bathymetry is not None:
         _anchor_depth = triang_data.get("water_depth_anchor_launch")
         _plot_bathymetry(
-            ax, bathymetry,
+            ax,
+            bathymetry,
             [west - _contour_margin, east + _contour_margin],
             [south - _contour_margin, north + _contour_margin],
             anchor_depth=_anchor_depth,
@@ -660,7 +673,7 @@ def plot_trilateration_survey(
         [deploy_lat, anchor_lat],
         "m:",
         linewidth=2,
-        label=f'Fallback: {solution["fallback_distance"]:.0f}m',
+        label=f"Fallback: {solution['fallback_distance']:.0f}m",
     )
 
     # Add position labels
@@ -689,7 +702,7 @@ def plot_trilateration_survey(
             )
         else:
             title2 = f"Water depth: {water_depth:.0f}m, Release height: {release_height:.0f}m, Transducer: {transducer_depth:.0f}m"
-        title3 = f'Max error: {solution["max_residual"]:.1f}m, RMS error: {solution["rms_residual"]:.1f}m'
+        title3 = f"Max error: {solution['max_residual']:.1f}m, RMS error: {solution['rms_residual']:.1f}m"
         ax.set_title(f"{title1}\n{title2}\n{title3}", pad=20)
 
     # Format axis ticks to degrees/minutes
@@ -767,7 +780,6 @@ def _plot_range_circles(ax, triang_data: dict, solution: dict):
     for i, (lat, lon, range_val) in enumerate(
         zip(triang_data["latitudes"], triang_data["longitudes"], triang_data["ranges"])
     ):
-
         if range_val > 0:  # Skip deployment position
             h_range = horizontal_range(
                 range_val,
@@ -783,7 +795,7 @@ def _plot_range_circles(ax, triang_data: dict, solution: dict):
         # Ship position
         color = "blue" if i < 3 else "red"
         ax.plot(lon, lat, "+", color=color, markersize=8, markeredgewidth=2)
-        ax.text(lon, lat, f" {i+1}", fontsize=10, color=color)
+        ax.text(lon, lat, f" {i + 1}", fontsize=10, color=color)
 
         # Range circle
         circle_lons, circle_lats = _generate_range_circle(lon, lat, h_range)
@@ -847,7 +859,7 @@ def _format_coordinate_ticks(ax, max_xticks: int = 5, max_yticks: int = 6):
     """Format axis ticks as degrees/minutes with hemisphere labels.
 
     Limits tick count via MaxNLocator to prevent label overlap, and rotates
-    x-axis labels 45° because longitude strings are wider than plain numbers.
+    x-axis labels 30° because longitude strings are wider than plain numbers.
     """
     from .utilities import dec2deg
     from matplotlib.ticker import MaxNLocator
@@ -1549,7 +1561,6 @@ def _plot_multi_range_circles(ax, triang_data: dict, color: str):
     for i, (lat, lon, range_val) in enumerate(
         zip(triang_data["latitudes"], triang_data["longitudes"], triang_data["ranges"])
     ):
-
         if range_val > 0:  # Skip deployment position
             h_range = horizontal_range(
                 range_val,
