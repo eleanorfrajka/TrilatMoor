@@ -36,7 +36,7 @@ class TestDsG1Survey:
 
     def test_dsg1_anchor_solution(self, dsg1_synthetic_data):
         """Test that dsG1 anchor position solution produces expected results.
-        
+
         Regression test with 0.5m precision (1e-6 degrees ≈ 0.1m at this latitude).
         """
         solution = trilatmoor.solve_anchor_position(dsg1_synthetic_data)

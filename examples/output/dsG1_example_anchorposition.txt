@@ -1,0 +1,26 @@
+Trilatmoor Anchor Position Results
+=====================================
+
+Location: dsG1
+
+Final Anchor Position:
+  Decimal degrees: 65.589768°N, 29.462458°W
+  Degrees/minutes: 65°35.39'N, 29°27.75'W
+
+Survey Quality:
+  Fallback distance: 222 m
+  Max residual error: 103.9 m
+  RMS residual error: 77.3 m
+
+  Overall quality: Fair
+
+Individual Fix Residuals:
+  Fix 1: 58.3 m
+  Fix 2: 59.3 m
+  Fix 3: 103.9 m
+  Fix 4: 78.5 m
+
+Survey Parameters:
+  Water depth: 690.0 m
+  Release height: 6.0 m
+  Transducer depth: 10.0 m

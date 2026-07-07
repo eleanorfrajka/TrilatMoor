@@ -21,22 +21,34 @@ from . import (
     process_survey_file,
     plot_trilateration_survey,
     plot_multiple_surveys,
+    plot_survey_grid,
     dec2deg,
     load_ship_track_netcdf,
+    query_depth_at_position,
 )
 from .plotting import extract_survey_time_range
 
 
+def _hemisphere(lon: float, lat: float) -> tuple:
+    """Return (lon_hemi, lat_hemi) strings for a coordinate pair."""
+    return ("E" if lon >= 0 else "W", "N" if lat >= 0 else "S")
+
+
 def write_anchor_position_file(
-    output_path: str, loc_name: str, triang_data: dict, solution: dict
+    output_path: str,
+    loc_name: str,
+    triang_data: dict,
+    solution: dict,
+    gebco_depth: Optional[float] = None,
 ):
     """Write anchor position results to a text file."""
     lat = solution["anchor_lat"]
     lon = solution["anchor_lon"]
 
     # Convert to degrees/minutes
-    _, _, lat_str = dec2deg(lat)
+    _, _, lat_str = dec2deg(abs(lat))
     _, _, lon_str = dec2deg(abs(lon))
+    lon_hemi, lat_hemi = _hemisphere(lon, lat)
 
     with open(output_path, "w") as f:
         f.write("Trilatmoor Anchor Position Results\n")
@@ -44,8 +56,10 @@ def write_anchor_position_file(
         f.write(f"Location: {loc_name}\n\n")
 
         f.write("Final Anchor Position:\n")
-        f.write(f"  Decimal degrees: {lat:.6f}°N, {abs(lon):.6f}°W\n")
-        f.write(f"  Degrees/minutes: {lat_str}N, {lon_str}W\n\n")
+        f.write(
+            f"  Decimal degrees: {abs(lat):.6f}°{lat_hemi}, {abs(lon):.6f}°{lon_hemi}\n"
+        )
+        f.write(f"  Degrees/minutes: {lat_str}{lat_hemi}, {lon_str}{lon_hemi}\n\n")
 
         f.write("Survey Quality:\n")
         f.write(f"  Fallback distance: {solution['fallback_distance']:.0f} m\n")
@@ -66,82 +80,135 @@ def write_anchor_position_file(
 
         f.write("Individual Fix Residuals:\n")
         for i, residual in enumerate(solution["residuals"]):
-            f.write(f"  Fix {i+1}: {residual:.1f} m\n")
+            f.write(f"  Fix {i + 1}: {residual:.1f} m\n")
 
         f.write("\nSurvey Parameters:\n")
-        f.write(f"  Water depth: {triang_data['water_depth_anchor_launch']} m\n")
+        f.write(
+            f"  Water depth at launch: {triang_data['water_depth_anchor_launch']} m\n"
+        )
+        if gebco_depth is not None:
+            f.write(f"  GEBCO depth at anchor: {gebco_depth:.0f} m\n")
         f.write(f"  Release height: {triang_data['release_height']} m\n")
         f.write(f"  Transducer depth: {triang_data['transducer_depth']} m\n")
 
 
-def find_bathymetry_file(bathy_dir: str, bathy_source: str) -> Optional[str]:
-    """Find bathymetry file based on directory and source."""
+_BATHY_PATTERNS = {
+    "gebco2025": ["GEBCO_2025.nc", "gebco_2025.nc", "GEBCO2025.nc"],
+    "gebco2023": ["GEBCO_2023.nc", "gebco_2023.nc", "GEBCO2023.nc"],
+    "gebco": ["GEBCO*.nc", "gebco*.nc"],
+    "etopo": ["ETOPO*.nc", "etopo*.nc"],
+    "auto": ["*.nc"],
+}
+
+
+def _resolve_bathy(bathy_dir: str, bathy_source: str = "auto") -> Optional[str]:
+    """Resolve a bathymetry NetCDF file from a directory and source name.
+
+    Parameters
+    ----------
+    bathy_dir : str
+        Directory containing bathymetry NetCDF files.
+    bathy_source : str
+        Named source (e.g. ``'gebco2025'``) used to select the filename pattern.
+        Use ``'auto'`` to return the first ``*.nc`` file found.
+
+    """
+    import glob
+
     if not os.path.exists(bathy_dir):
         print(f"Warning: Bathymetry directory not found: {bathy_dir}")
         return None
 
-    # Common bathymetry file patterns
-    patterns = {
-        "gebco2025": ["GEBCO_2025.nc", "gebco_2025.nc", "GEBCO2025.nc"],
-        "gebco2023": ["GEBCO_2023.nc", "gebco_2023.nc", "GEBCO2023.nc"],
-        "gebco": ["GEBCO*.nc", "gebco*.nc"],
-        "etopo": ["ETOPO*.nc", "etopo*.nc"],
-        "msm142": ["msm142_bathy*.nc", "MSM142_bathy*.nc"],
-        "auto": ["*.nc"],  # Search for any NetCDF file
-    }
-
-    search_patterns = patterns.get(bathy_source.lower(), [f"*{bathy_source}*.nc"])
-
-    import glob
-
-    for pattern in search_patterns:
-        full_pattern = os.path.join(bathy_dir, pattern)
-        matches = glob.glob(full_pattern)
+    patterns = _BATHY_PATTERNS.get(bathy_source.lower(), [f"*{bathy_source}*.nc"])
+    for pattern in patterns:
+        matches = sorted(glob.glob(os.path.join(bathy_dir, pattern)))
         if matches:
-            # Return the first match
-            bathy_file = matches[0]
-            print(f"Found bathymetry file: {bathy_file}")
-            return bathy_file
+            print(f"Found bathymetry file: {matches[0]}")
+            return matches[0]
 
-    print(
-        f"Warning: No bathymetry file found for source '{bathy_source}' in {bathy_dir}"
-    )
-    available_files = glob.glob(os.path.join(bathy_dir, "*.nc"))
-    if available_files:
-        print(
-            f"Available NetCDF files: {[os.path.basename(f) for f in available_files]}"
-        )
-
+    print(f"Warning: No bathymetry file matching '{bathy_source}' in {bathy_dir}")
+    available = sorted(glob.glob(os.path.join(bathy_dir, "*.nc")))
+    if available:
+        print(f"  Available: {[os.path.basename(f) for f in available]}")
     return None
 
 
 def process_single_survey(
     input_file: str,
-    output_name: str,
+    output_dir: str = ".",
+    output_name: Optional[str] = None,
     sound_speed: Optional[float] = None,
-    bathymetry_path: Optional[str] = None,
+    bathy_dir: Optional[str] = None,
     ship_track_path: Optional[str] = None,
     time_interval_hr: Optional[List[float]] = None,
+    format: str = "all",
+    figsize: Optional[List[float]] = None,
+    no_title: bool = False,
+    no_legend: bool = False,
 ):
-    """Process a single survey file and generate outputs."""
+    """Process a single survey file and write a plot and anchor position file.
+
+    Parameters
+    ----------
+    input_file : str
+        Path to the triangulation survey file.
+    output_dir : str
+        Directory for output files. Created if it does not exist.
+    output_name : str, optional
+        Base filename (no extension) for outputs. Defaults to the location
+        name read from the survey file header.
+    sound_speed : float, optional
+        True sound speed in m/s to override the file value.
+    bathy_dir : str, optional
+        Resolved bathymetry NetCDF file path (``--bathy-dir`` + ``--bathy-source``).
+    ship_track_path : str, optional
+        Path to a ship track NetCDF file (``--ship-track``).
+    time_interval_hr : list of float, optional
+        [start, end] hours relative to survey time for ship track filtering.
+    format : str
+        Output format: ``'all'`` (png + txt), ``'png'``, or ``'txt'``.
+        ``'grid'`` is not supported for single surveys and falls back to ``'all'``.
+    figsize : list of float, optional
+        Figure size as [width, height] in inches.
+    no_title : bool
+        Omit the figure title.
+    no_legend : bool
+        Omit the figure legend.
+
+    """
     try:
-        # Process the survey
+        if format == "grid":
+            print(
+                "Note: 'grid' format does not apply to single-survey mode; writing png and txt."
+            )
+            format = "all"
+        save_png = format in ("all", "png")
+        save_txt = format in ("all", "txt")
         print(f"Processing {input_file}...")
         triang_data, solution = process_survey_file(input_file, sound_speed)
 
-        # Generate plot
-        plot_file = f"{output_name}.png"
-        print(f"Creating plot: {plot_file}")
+        # Look up GEBCO depth at the trilaterated anchor position
+        gebco_depth = None
+        if bathy_dir:
+            gebco_depth = query_depth_at_position(
+                bathy_dir, solution["anchor_lat"], solution["anchor_lon"]
+            )
+            if gebco_depth is not None:
+                print(f"GEBCO depth at anchor position: {gebco_depth:.0f}m")
 
-        if bathymetry_path:
-            print(f"Including bathymetry from: {bathymetry_path}")
+        base = output_name if output_name else triang_data["loc_name"]
+        os.makedirs(output_dir, exist_ok=True)
+        plot_file = os.path.join(output_dir, f"{base}.png")
+        pos_file = os.path.join(output_dir, f"{base}_anchorposition.txt")
+
+        if bathy_dir:
+            print(f"Including bathymetry from: {bathy_dir}")
 
         # Load ship track if provided
         ship_track = None
         if ship_track_path:
             print(f"Loading ship track from: {ship_track_path}")
             try:
-                # Calculate time window for ship track
                 time_start, time_end = None, None
                 if time_interval_hr is not None:
                     survey_start, survey_end = extract_survey_time_range(triang_data)
@@ -151,7 +218,6 @@ def process_single_survey(
                         print(
                             f"Time filtering: {time_start} to {time_end} ({time_interval_hr[0]:+.0f} to {time_interval_hr[1]:+.0f} hours)"
                         )
-
                 ship_track = load_ship_track_netcdf(
                     ship_track_path,
                     subsample_minutes=1,
@@ -162,33 +228,47 @@ def process_single_survey(
             except Exception as e:
                 print(f"Warning: Failed to load ship track: {e}")
 
-        fig = plot_trilateration_survey(
-            triang_data,
-            solution,
-            ship_track=ship_track,
-            bathymetry=bathymetry_path,
-            save_figure=plot_file,
-        )
-        plt.close(fig)
+        if save_png:
+            print(f"Creating plot: {plot_file}")
+            fig = plot_trilateration_survey(
+                triang_data,
+                solution,
+                ship_track=ship_track,
+                bathymetry=bathy_dir,
+                save_figure=plot_file,
+                figsize=tuple(figsize) if figsize else (10, 8),
+                no_title=no_title,
+                no_legend=no_legend,
+            )
+            plt.close(fig)
 
-        # Generate position file
-        pos_file = f"{output_name}_anchorposition.txt"
-        print(f"Writing position data: {pos_file}")
-        write_anchor_position_file(
-            pos_file, triang_data["loc_name"], triang_data, solution
-        )
+        if save_txt:
+            print(f"Writing position data: {pos_file}")
+            write_anchor_position_file(
+                pos_file,
+                triang_data["loc_name"],
+                triang_data,
+                solution,
+                gebco_depth=gebco_depth,
+            )
 
-        # Print summary
         lat = solution["anchor_lat"]
         lon = solution["anchor_lon"]
-        _, _, lat_str = dec2deg(lat)
+        _, _, lat_str = dec2deg(abs(lat))
         _, _, lon_str = dec2deg(abs(lon))
-
+        lon_hemi, lat_hemi = _hemisphere(lon, lat)
         print(f"\nResults for {triang_data['loc_name']}:")
-        print(f"  Position: {lat:.6f}°N, {abs(lon):.6f}°W ({lat_str}N, {lon_str}W)")
+        print(
+            f"  Position: {abs(lat):.6f}°{lat_hemi}, {abs(lon):.6f}°{lon_hemi} ({lat_str}{lat_hemi}, {lon_str}{lon_hemi})"
+        )
+        if gebco_depth is not None:
+            print(f"  GEBCO depth at anchor: {gebco_depth:.0f}m")
         print(f"  Fallback: {solution['fallback_distance']:.0f}m")
         print(f"  RMS residual: {solution['rms_residual']:.1f}m")
-        print(f"  Files generated: {plot_file}, {pos_file}")
+        generated = [
+            f for f, flag in [(plot_file, save_png), (pos_file, save_txt)] if flag
+        ]
+        print(f"  Files generated: {', '.join(generated)}")
 
         return True
 
@@ -197,79 +277,151 @@ def process_single_survey(
         return False
 
 
+def _quality_label(rms: float) -> str:
+    if rms < 10:
+        return "Excellent"
+    elif rms < 50:
+        return "Good"
+    elif rms < 100:
+        return "Fair"
+    return "Poor"
+
+
 def process_multiple_surveys(
     input_files: List[str],
-    output_name: str,
+    output_dir: str = ".",
+    output_name: Optional[str] = None,
     sound_speed: Optional[float] = None,
-    bathymetry_path: Optional[str] = None,
+    bathy_dir: Optional[str] = None,
     ship_track_path: Optional[str] = None,
     time_interval_hr: Optional[List[float]] = None,
+    format: str = "all",
+    figsize: Optional[List[float]] = None,
+    no_title: bool = False,
+    no_legend: bool = False,
 ):
-    """Process multiple survey files and generate multi-plot."""
+    """Process multiple survey files and write overview plot and summary.
+
+    Parameters
+    ----------
+    input_files : list of str
+        Paths to triangulation survey files.
+    output_dir : str
+        Directory for output files. Created if it does not exist.
+    output_name : str, optional
+        Base filename (no extension) for outputs. Defaults to ``'multi_survey'``.
+    sound_speed : float, optional
+        True sound speed in m/s to override file values for all surveys.
+    bathy_dir : str, optional
+        Resolved bathymetry NetCDF file path (``--bathy-dir`` + ``--bathy-source``).
+    ship_track_path : str, optional
+        Path to a ship track NetCDF file (``--ship-track``).
+    time_interval_hr : list of float, optional
+        [start, end] hours relative to survey time for ship track filtering.
+    format : str
+        Output format: ``'all'`` (png + grid + txt), ``'png'`` (overview only),
+        ``'grid'`` (per-mooring grid only), or ``'txt'`` (summary file only).
+    figsize : list of float, optional
+        Figure size as [width, height] in inches.
+    no_title : bool
+        Omit figure titles.
+    no_legend : bool
+        Omit figure legends.
+
+    """
     try:
         print(f"Processing {len(input_files)} survey files...")
 
-        # Generate multi-plot
-        plot_file = f"{output_name}.png"
-        print(f"Creating multi-survey plot: {plot_file}")
-
-        if bathymetry_path:
-            print(f"Including bathymetry from: {bathymetry_path}")
-
-        # Load ship track info if provided
+        if bathy_dir:
+            print(f"Including bathymetry from: {bathy_dir}")
         if ship_track_path:
             print(f"Including ship track from: {ship_track_path}")
 
+        save_png = format in ("all", "png")
+        save_grid = format in ("all", "grid")
+        save_txt = format in ("all", "txt")
+
+        base = output_name if output_name else "multi_survey"
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Overview plot (always computed to get survey_results; selectively saved)
+        plot_file = os.path.join(output_dir, f"{base}.png")
+        overview_figsize = tuple(figsize) if figsize else (12, 8)
         fig, survey_results = plot_multiple_surveys(
             input_files,
-            bathymetry_path=bathymetry_path,
+            bathymetry_path=bathy_dir,
             ship_track_path=ship_track_path,
             sound_speed=sound_speed,
-            figsize=(12, 8),
+            figsize=overview_figsize,
+            no_title=no_title,
+            no_legend=no_legend,
         )
-        fig.savefig(plot_file, dpi=300, bbox_inches="tight")
+        generated_files = []
+        if save_png:
+            print(f"Creating multi-survey plot: {plot_file}")
+            fig.savefig(plot_file, dpi=300, bbox_inches="tight")
+            generated_files.append(plot_file)
         plt.close(fig)
 
-        # Generate summary file
-        summary_file = f"{output_name}_summary.txt"
-        print(f"Writing summary: {summary_file}")
-
-        with open(summary_file, "w") as f:
-            f.write("Trilatmoor Multi-Survey Results\n")
-            f.write("===============================\n\n")
-            f.write(f"Processed {len(survey_results)} surveys:\n\n")
-
-            f.write(
-                f"{'Location':<8} {'Decimal Degrees':<22} {'Degrees/Minutes':<18} {'Fallback':<9} {'RMS':<6} {'Quality':<9}\n"
+        # Grid figure (overview + per-mooring subplots)
+        if save_grid:
+            grid_file = os.path.join(output_dir, f"{base}_grid.png")
+            print(f"Creating grid figure: {grid_file}")
+            fig_grid = plot_survey_grid(
+                survey_results,
+                bathymetry_path=bathy_dir,
+                figsize=tuple(figsize) if figsize else None,
+                no_title=no_title,
+                no_legend=no_legend,
             )
-            f.write(f"{'-'*80}\n")
+            fig_grid.savefig(grid_file, dpi=300, bbox_inches="tight")
+            plt.close(fig_grid)
+            generated_files.append(grid_file)
 
-            for loc_name, triang_data, solution in survey_results:
-                lat = solution["anchor_lat"]
-                lon = abs(solution["anchor_lon"])
-                fallback = solution["fallback_distance"]
-                rms = solution["rms_residual"]
-
-                _, _, lat_str = dec2deg(lat)
-                _, _, lon_str = dec2deg(lon)
-
-                if rms < 10:
-                    quality = "Excellent"
-                elif rms < 50:
-                    quality = "Good"
-                elif rms < 100:
-                    quality = "Fair"
-                else:
-                    quality = "Poor"
-
-                decimal_str = f"{lat:.4f}°N, {lon:.4f}°W"
-                degmin_str = f"{lat_str}N, {lon_str}W"
-
+        # Summary file
+        summary_file = os.path.join(output_dir, f"{base}_summary.txt")
+        if save_txt:
+            print(f"Writing summary: {summary_file}")
+            with open(summary_file, "w") as f:
+                f.write("Trilatmoor Multi-Survey Results\n")
+                f.write("===============================\n\n")
+                f.write(f"Processed {len(survey_results)} surveys:\n\n")
                 f.write(
-                    f"{loc_name:<8} {decimal_str:<22} {degmin_str:<18} {fallback:<9.0f} {rms:<6.1f} {quality:<9}\n"
+                    f"{'Location':<10} {'Position':<30} {'Fallback':>9} {'RMS':>7} {'Quality':<9}\n"
                 )
+                f.write(f"{'-' * 70}\n")
+                for loc_name, triang_data, solution in survey_results:
+                    lat = solution["anchor_lat"]
+                    lon = solution["anchor_lon"]
+                    fallback = solution["fallback_distance"]
+                    rms = solution["rms_residual"]
+                    lon_hemi, lat_hemi = _hemisphere(lon, lat)
+                    _, _, lat_str = dec2deg(abs(lat))
+                    _, _, lon_str = dec2deg(abs(lon))
+                    pos_str = f"{lat_str}{lat_hemi}, {lon_str}{lon_hemi}"
+                    f.write(
+                        f"{loc_name:<10} {pos_str:<30} {fallback:>9.0f} {rms:>7.1f} {_quality_label(rms):<9}\n"
+                    )
+            generated_files.append(summary_file)
 
-        print(f"Files generated: {plot_file}, {summary_file}")
+        # Console summary table
+        print(
+            f"\n{'Location':<10} {'Position':<30} {'Fallback':>9} {'RMS':>7} {'Quality'}"
+        )
+        print("-" * 65)
+        for loc_name, triang_data, solution in survey_results:
+            lat = solution["anchor_lat"]
+            lon = solution["anchor_lon"]
+            lon_hemi, lat_hemi = _hemisphere(lon, lat)
+            _, _, lat_str = dec2deg(abs(lat))
+            _, _, lon_str = dec2deg(abs(lon))
+            pos_str = f"{lat_str}{lat_hemi}, {lon_str}{lon_hemi}"
+            print(
+                f"{loc_name:<10} {pos_str:<30} {solution['fallback_distance']:>9.0f} "
+                f"{solution['rms_residual']:>7.1f} {_quality_label(solution['rms_residual'])}"
+            )
+
+        print(f"\nFiles generated: {', '.join(generated_files)}")
         return True
 
     except Exception as e:
@@ -284,26 +436,39 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  trilatmoor -c survey.txt -o FC1_results
-  trilatmoor --config survey.txt --output FC1_results
-  trilatmoor --multi survey1.txt survey2.txt -o multi_results
-  trilatmoor -c survey.txt -o results --sound-speed 1480
-  trilatmoor -c survey.txt -o results --bathy-dir data/bathymetry --bathy-source gebco2025
-  trilatmoor -c survey.txt -o results --bathy-file /path/to/GEBCO_2025.nc
+  trilatmoor -c survey.txt
+  trilatmoor -c survey.txt -o results/ --output FC1
+  trilatmoor --multi survey1.txt survey2.txt -o results/ --output campaign --format grid
+  trilatmoor -c survey.txt --sound-speed 1480
+  trilatmoor -c survey.txt --bathy-dir data/bathymetry --bathy-source gebco2025
         """,
     )
 
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("-c", "--config", help="Process a single survey file")
     group.add_argument(
-        "--multi", nargs="+", help="Process multiple survey files for multi-plot"
+        "-c", "--config", help="Survey file to process (single-survey mode)"
+    )
+    group.add_argument(
+        "--multi",
+        nargs="+",
+        metavar="FILE",
+        help="Two or more survey files to process together (multi-survey mode)",
     )
 
     parser.add_argument(
         "-o",
+        "--output-directory",
+        default=".",
+        metavar="DIR",
+        help="Directory for output files (default: current directory)",
+    )
+
+    parser.add_argument(
         "--output",
-        required=True,
-        help="Output file base name (without extension)",
+        default=None,
+        metavar="NAME",
+        help="Base filename for outputs, without extension "
+        "(default: location name for single survey, 'multi_survey' for --multi)",
     )
 
     parser.add_argument(
@@ -312,18 +477,18 @@ Examples:
         help="Override sound speed in m/s (default: use file value or 1500)",
     )
 
-    parser.add_argument("--bathy-dir", help="Directory containing bathymetry files")
-
     parser.add_argument(
-        "--bathy-source",
-        default="auto",
-        choices=["gebco2025", "gebco2023", "gebco", "etopo", "msm142", "auto"],
-        help="Bathymetry data source (default: auto - find any .nc file)",
+        "--bathy-dir",
+        default=None,
+        metavar="DIR",
+        help="Directory containing bathymetry NetCDF files",
     )
 
     parser.add_argument(
-        "--bathy-file",
-        help="Specific bathymetry file path (overrides --bathy-dir/--bathy-source)",
+        "--bathy-source",
+        default="gebco2025",
+        choices=list(_BATHY_PATTERNS.keys()),
+        help="Bathymetry dataset name used to select the file (default: gebco2025)",
     )
 
     parser.add_argument(
@@ -337,6 +502,37 @@ Examples:
         default=[-12, 12],
         metavar=("START_HR", "END_HR"),
         help="Time interval around survey (hours before/after). Default: -12 12",
+    )
+
+    parser.add_argument(
+        "--format",
+        choices=["all", "png", "grid", "txt"],
+        default="all",
+        help=(
+            "Output format: 'all' (default), 'png' (overview plot only), "
+            "'grid' (per-mooring grid, --multi only), 'txt' (summary file only)"
+        ),
+    )
+
+    parser.add_argument(
+        "--figsize",
+        nargs=2,
+        type=float,
+        metavar=("WIDTH", "HEIGHT"),
+        default=None,
+        help="Figure size in inches, e.g. --figsize 12 8",
+    )
+
+    parser.add_argument(
+        "--no-title",
+        action="store_true",
+        help="Omit figure title(s)",
+    )
+
+    parser.add_argument(
+        "--no-legend",
+        action="store_true",
+        help="Omit figure legend(s)",
     )
 
     args = parser.parse_args()
@@ -353,37 +549,40 @@ Examples:
             print(f"Error: Input file not found: {file_path}")
             sys.exit(1)
 
-    # Handle bathymetry options
-    bathymetry_path = None
-    if args.bathy_file:
-        # Specific file provided
-        if os.path.exists(args.bathy_file):
-            bathymetry_path = args.bathy_file
-        else:
-            print(f"Warning: Bathymetry file not found: {args.bathy_file}")
-    elif args.bathy_dir:
-        # Search for file in directory based on source
-        bathymetry_path = find_bathymetry_file(args.bathy_dir, args.bathy_source)
+    # Resolve bathymetry file (None if no directory specified or directory not found)
+    resolved_bathy = (
+        _resolve_bathy(args.bathy_dir, args.bathy_source) if args.bathy_dir else None
+    )
 
     # Process based on mode
     success = False
     if args.config:
         success = process_single_survey(
             args.config,
+            args.output_directory,
             args.output,
             args.sound_speed,
-            bathymetry_path,
+            resolved_bathy,
             args.ship_track,
             args.time_interval_hr,
+            format=args.format,
+            figsize=args.figsize,
+            no_title=args.no_title,
+            no_legend=args.no_legend,
         )
     elif args.multi:
         success = process_multiple_surveys(
             args.multi,
+            args.output_directory,
             args.output,
             args.sound_speed,
-            bathymetry_path,
+            resolved_bathy,
             args.ship_track,
             args.time_interval_hr,
+            format=args.format,
+            figsize=args.figsize,
+            no_title=args.no_title,
+            no_legend=args.no_legend,
         )
 
     if success:

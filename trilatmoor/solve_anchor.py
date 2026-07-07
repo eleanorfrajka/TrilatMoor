@@ -58,7 +58,6 @@ def solve_anchor_position(
     for i, (lat, lon, range_val) in enumerate(
         zip(triang_data["latitudes"], triang_data["longitudes"], corrected_ranges)
     ):
-
         if range_val > 0:  # Skip anchor drop position (range = 0)
             h_range = horizontal_range(
                 range_val,

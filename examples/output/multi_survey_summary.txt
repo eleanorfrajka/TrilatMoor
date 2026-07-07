@@ -1,0 +1,9 @@
+Trilatmoor Multi-Survey Results
+===============================
+
+Processed 2 surveys:
+
+Location   Position                        Fallback     RMS Quality  
+----------------------------------------------------------------------
+dsG1       65°35.39'N, 29°27.75'W               222    77.3 Fair     
+dsK2       65°33.29'N, 29°19.73'W               173    47.6 Good     

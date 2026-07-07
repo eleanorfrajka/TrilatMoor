@@ -138,10 +138,12 @@ def parse_triangulation_file(filename: str) -> dict:
 
             except (ValueError, IndexError) as e:
                 raise ValueError(
-                    f"Error parsing data line {line_idx+1}: '{line}'. {str(e)}"
+                    f"Error parsing data line {line_idx + 1}: '{line}'. {str(e)}"
                 )
         else:
-            raise ValueError(f"Insufficient data fields in line {line_idx+1}: '{line}'")
+            raise ValueError(
+                f"Insufficient data fields in line {line_idx + 1}: '{line}'"
+            )
 
         line_idx += 1
 
