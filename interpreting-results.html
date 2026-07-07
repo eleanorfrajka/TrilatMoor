@@ -1,0 +1,252 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interpreting results &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Bathymetry" href="bathymetry.html" />
+    <link rel="prev" title="Algorithm" href="algorithm.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            trilatmoor
+              <img src="_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm.html">Algorithm</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Interpreting results</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#output-files">Output files</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#anchorposition-txt"><code class="docutils literal notranslate"><span class="pre">_anchorposition.txt</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#rms-residual">RMS residual</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fallback-distance">Fallback distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#launch-depth-vs-gebco-depth">Launch depth vs GEBCO depth</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#when-to-distrust-results">When to distrust results</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sound-speed-sensitivity">Sound speed sensitivity</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Interpreting results</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/interpreting-results.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="interpreting-results">
+<h1>Interpreting results<a class="headerlink" href="#interpreting-results" title="Link to this heading"></a></h1>
+<section id="output-files">
+<h2>Output files<a class="headerlink" href="#output-files" title="Link to this heading"></a></h2>
+<section id="anchorposition-txt">
+<h3><code class="docutils literal notranslate"><span class="pre">_anchorposition.txt</span></code><a class="headerlink" href="#anchorposition-txt" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Trilatmoor Anchor Position Results
+=====================================
+
+Location: dsG1
+
+Final Anchor Position:
+  Decimal degrees: 65.589856°N, 29.462519°W
+  Degrees/minutes: 65°35.39&#39;N, 29°27.75&#39;W
+
+Survey Quality:
+  Fallback distance: 222 m
+  Max residual error: 103.9 m
+  RMS residual error: 77.3 m
+
+  Overall quality: Good
+
+Individual Fix Residuals:
+  Fix 1: 103.9 m
+  Fix 2:  14.4 m
+  Fix 3:  97.7 m
+  Fix 4:  23.9 m
+
+Survey Parameters:
+  Water depth at launch:  690 m
+  GEBCO depth at anchor:  695 m
+  Release height:           6 m
+  Transducer depth:        10 m
+</pre></div>
+</div>
+</section>
+</section>
+<section id="rms-residual">
+<h2>RMS residual<a class="headerlink" href="#rms-residual" title="Link to this heading"></a></h2>
+<p>The RMS residual measures how consistently the range circles intersect at the
+solved anchor position.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>RMS</p></th>
+<th class="head"><p>Assessment</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>&lt; 10 m</p></td>
+<td><p>Excellent — range circles meet almost perfectly</p></td>
+</tr>
+<tr class="row-odd"><td><p>10–50 m</p></td>
+<td><p>Good — typical for a well-executed survey</p></td>
+</tr>
+<tr class="row-even"><td><p>50–100 m</p></td>
+<td><p>Fair — worth inspecting individual residuals</p></td>
+</tr>
+<tr class="row-odd"><td><p>&gt; 100 m</p></td>
+<td><p>Poor — recheck sound speed, water depth, and fix geometry</p></td>
+</tr>
+</tbody>
+</table>
+<p>Large residuals on individual fixes (visible in the fix-by-fix table) often
+point to a position error in that GPS fix rather than a problem with the
+acoustics.</p>
+</section>
+<section id="fallback-distance">
+<h2>Fallback distance<a class="headerlink" href="#fallback-distance" title="Link to this heading"></a></h2>
+<p>The fallback distance is the great-circle distance (m) from the <strong>anchor
+deployment position</strong> (range = 0 in the survey file) to the <strong>solved anchor
+position</strong>.</p>
+<p>It is a sanity check, not an error metric.  For a typical slack-moored
+deployment the anchor should land within 0–500 m of the deployment position
+depending on depth and line scope.  Values much larger than the water depth
+may indicate a data entry problem or a ship track error in the deployment fix.</p>
+</section>
+<section id="launch-depth-vs-gebco-depth">
+<h2>Launch depth vs GEBCO depth<a class="headerlink" href="#launch-depth-vs-gebco-depth" title="Link to this heading"></a></h2>
+<p>When a bathymetry file is provided:</p>
+<ul class="simple">
+<li><p><strong>Launch depth</strong> (<code class="docutils literal notranslate"><span class="pre">Water_depth_anchor_launch</span></code>) — the depth recorded at the
+moment of deployment, usually from the ship’s echo sounder or a pre-survey
+CTD.  This value is used to compute the slant-to-horizontal range correction
+and therefore affects the trilaterated position.</p></li>
+<li><p><strong>GEBCO depth at anchor</strong> — the nearest-neighbour depth from the GEBCO grid
+at the <em>solved</em> anchor position.  This is a post-hoc check; agreement within
+~50 m is reassuring.  A large discrepancy suggests either a coarse GEBCO grid
+cell or that the launch depth value in the survey file is inaccurate.</p></li>
+</ul>
+</section>
+<section id="when-to-distrust-results">
+<h2>When to distrust results<a class="headerlink" href="#when-to-distrust-results" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>RMS &gt; 100 m with fixes spread across multiple azimuths — check for a
+mis-entered GPS fix (drop the outlier and re-run).</p></li>
+<li><p>RMS &gt; 100 m with fixes from a straight steaming run — geometry is
+ill-conditioned; azimuthal coverage is insufficient.</p></li>
+<li><p>Fallback distance ≫ water depth — suspect the deployment fix (range = 0
+line in the survey file).</p></li>
+<li><p>GEBCO depth and launch depth differ by &gt; 10 % — verify the launch depth
+header value.</p></li>
+</ul>
+</section>
+<section id="sound-speed-sensitivity">
+<h2>Sound speed sensitivity<a class="headerlink" href="#sound-speed-sensitivity" title="Link to this heading"></a></h2>
+<p>A 1 m/s error in sound speed produces a fractional range error of ≈ 0.07 %
+(1/1503 × 100 %).  For a 1 000 m range this is ≈ 0.7 m.  At typical RAPID
+survey ranges (500–3 000 m), a 5 m/s sound speed error translates to a
+position error of roughly 2–10 m — well below the typical RMS residual.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="algorithm.html" class="btn btn-neutral float-left" title="Algorithm" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="bathymetry.html" class="btn btn-neutral float-right" title="Bathymetry" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

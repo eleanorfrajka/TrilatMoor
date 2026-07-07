@@ -1,0 +1,240 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Algorithm &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Interpreting results" href="interpreting-results.html" />
+    <link rel="prev" title="Survey file format" href="data-format.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            trilatmoor
+              <img src="_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data-format.html">Survey file format</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Algorithm</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#range-corrections">1. Range corrections</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#sound-speed">Sound speed</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#slant-to-horizontal-range">Slant-to-horizontal range</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#geodetic-distance">2. Geodetic distance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#least-squares-trilateration">3. Least-squares trilateration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quality-metrics">4. Quality metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#survey-geometry">5. Survey geometry</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Algorithm</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/algorithm.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="algorithm">
+<h1>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading"></a></h1>
+<p>trilatmoor determines the seafloor anchor position by least-squares acoustic
+trilateration.  The pipeline has three stages: range correction, coordinate
+conversion, and optimisation.</p>
+<section id="range-corrections">
+<h2>1. Range corrections<a class="headerlink" href="#range-corrections" title="Link to this heading"></a></h2>
+<section id="sound-speed">
+<h3>Sound speed<a class="headerlink" href="#sound-speed" title="Link to this heading"></a></h3>
+<p>The ship’s acoustic system assumes a fixed sound speed <em>c̃</em> (default 1507 m/s).
+If the true in-situ speed <em>c</em> differs, every measured slant range <em>s̃ᵢ</em> must be
+rescaled:</p>
+<p>$$s_i = \tilde{s}_i \cdot \frac{c}{\tilde{c}}$$</p>
+<p>The defaults <code class="docutils literal notranslate"><span class="pre">true_sound_speed</span> <span class="pre">=</span> <span class="pre">1503</span></code> m/s and <code class="docutils literal notranslate"><span class="pre">measured_sound_speed</span> <span class="pre">=</span> <span class="pre">1507</span></code>
+m/s are representative values for the RAPID 26°N array and should be replaced
+with CTD-derived estimates when available.</p>
+</section>
+<section id="slant-to-horizontal-range">
+<h3>Slant-to-horizontal range<a class="headerlink" href="#slant-to-horizontal-range" title="Link to this heading"></a></h3>
+<p>The acoustic signal travels a slant path from the ship’s transducer to the
+seafloor release.  The corrected slant range <em>sᵢ</em> is converted to a horizontal
+range <em>rᵢ</em> using the water depth:</p>
+<p>$$r_i = \sqrt{s_i^2 - d_v^2}$$</p>
+<p>where the vertical separation is:</p>
+<p>$$d_v = H - h_r - h_t$$</p>
+<ul class="simple">
+<li><p><em>H</em> — water depth at anchor launch (m), from the survey file header</p></li>
+<li><p><em>hᵣ</em> — release height above the seafloor (m)</p></li>
+<li><p><em>hₜ</em> — transducer depth below the sea surface (m)</p></li>
+</ul>
+</section>
+</section>
+<section id="geodetic-distance">
+<h2>2. Geodetic distance<a class="headerlink" href="#geodetic-distance" title="Link to this heading"></a></h2>
+<p>All distances between ship fixes and the candidate anchor position are
+computed with <strong>Vincenty’s inverse formula</strong> on the WGS-84 ellipsoid.  This
+gives sub-metre accuracy at any latitude, including high latitudes (65°N for
+the RAPID array) where the Haversine approximation accumulates noticeable
+error.</p>
+</section>
+<section id="least-squares-trilateration">
+<h2>3. Least-squares trilateration<a class="headerlink" href="#least-squares-trilateration" title="Link to this heading"></a></h2>
+<p>Given <em>n</em> ship positions (φᵢ, λᵢ) and corrected horizontal ranges <em>rᵢ</em>, find
+the anchor position (φ, λ) that minimises the sum of squared residuals:</p>
+<p>$$\min_{\phi,,\lambda} \sum_{i=1}^{n} \bigl(d_i(\phi,\lambda) - r_i\bigr)^2$$</p>
+<p>where <em>dᵢ</em> is the Vincenty distance from the candidate anchor to the <em>i</em>-th
+ship position.</p>
+<p>The algorithm linearises this problem around an initial estimate (the
+centroid of all ship positions):</p>
+<ol class="arabic simple">
+<li><p>Convert each ship fix to Cartesian coordinates <em>(xᵢ, yᵢ)</em> relative to the
+initial estimate using the Vincenty forward formula.</p></li>
+<li><p>Build the overdetermined linear system from pairwise differences of the
+range equations, eliminating the quadratic terms.</p></li>
+<li><p>Solve with <code class="docutils literal notranslate"><span class="pre">numpy.linalg.lstsq</span></code> to obtain a Cartesian correction
+<em>(Δx, Δy)</em>.</p></li>
+<li><p>Apply the correction back to geographic coordinates with the Vincenty
+forward formula.</p></li>
+</ol>
+</section>
+<section id="quality-metrics">
+<h2>4. Quality metrics<a class="headerlink" href="#quality-metrics" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Metric</p></th>
+<th class="head"><p>Definition</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Residual <em>εᵢ</em></p></td>
+<td><p>|<em>dᵢ</em>(anchor) − <em>rᵢ</em>| for each fix (m)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Max residual</p></td>
+<td><p>max(<em>εᵢ</em>) — worst single fix</p></td>
+</tr>
+<tr class="row-even"><td><p>RMS residual</p></td>
+<td><p>√(mean(<em>εᵢ²</em>)) — overall fit quality</p></td>
+</tr>
+<tr class="row-odd"><td><p>Fallback distance</p></td>
+<td><p>Vincenty distance from deployment position to solved anchor (m)</p></td>
+</tr>
+</tbody>
+</table>
+<p>See <a class="reference internal" href="interpreting-results.html"><span class="std std-doc">Interpreting results</span></a> for guidance on what
+these numbers mean in practice.</p>
+</section>
+<section id="survey-geometry">
+<h2>5. Survey geometry<a class="headerlink" href="#survey-geometry" title="Link to this heading"></a></h2>
+<p>A well-conditioned survey requires:</p>
+<ul class="simple">
+<li><p>At least <strong>three</strong> non-zero range fixes.</p></li>
+<li><p><strong>Broad azimuthal coverage</strong> — fixes spread over ≥ 180° around the anchor.
+Coverage ≥ 270° is strongly preferred; a straight steaming run produces a
+rank-deficient geometry with poorly constrained cross-track position.</p></li>
+<li><p>Ranges approximately matching the water depth (within a factor of ~3),
+so the slant-to-horizontal correction is accurate.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="data-format.html" class="btn btn-neutral float-left" title="Survey file format" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="interpreting-results.html" class="btn btn-neutral float-right" title="Interpreting results" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

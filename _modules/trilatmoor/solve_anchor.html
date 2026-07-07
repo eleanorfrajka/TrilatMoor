@@ -1,0 +1,403 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>trilatmoor.solve_anchor &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            trilatmoor
+              <img src="../../_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">trilatmoor.solve_anchor</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for trilatmoor.solve_anchor</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Core trilateration algorithm for determining anchor positions.</span>
+
+<span class="sd">Based on MATLAB solve_anchor.m using least-squares solution.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">vincenty_distance</span><span class="p">,</span> <span class="n">sound_speed_correction</span><span class="p">,</span> <span class="n">horizontal_range</span>
+
+
+<div class="viewcode-block" id="solve_anchor_position">
+<a class="viewcode-back" href="../../api.html#trilatmoor.solve_anchor.solve_anchor_position">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">solve_anchor_position</span><span class="p">(</span>
+    <span class="n">triang_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">true_sound_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1503</span><span class="p">,</span>
+    <span class="n">measured_sound_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1507</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve for anchor position using trilateration with multiple ship positions.</span>
+
+<span class="sd">    Based on MATLAB solve_anchor.m and f_run_anchor.m functions.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    triang_data : dict</span>
+<span class="sd">        Survey data containing ship positions and ranges with keys:</span>
+<span class="sd">        - &#39;latitudes&#39;, &#39;longitudes&#39;, &#39;ranges&#39;, &#39;water_depth_anchor_launch&#39;</span>
+<span class="sd">        - &#39;release_height&#39;, &#39;transducer_depth&#39;</span>
+<span class="sd">    true_sound_speed : float</span>
+<span class="sd">        Actual sound speed (m/s), default 1503 m/s</span>
+<span class="sd">    measured_sound_speed : float</span>
+<span class="sd">        Sound speed used by transducer (m/s), default 1507 m/s</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Solution with keys: &#39;anchor_lat&#39;, &#39;anchor_lon&#39;, &#39;fallback_distance&#39;,</span>
+<span class="sd">        &#39;max_residual&#39;, &#39;rms_residual&#39;, &#39;residuals&#39;</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If insufficient data for trilateration</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Count valid fixes (non-zero ranges)</span>
+    <span class="n">valid_fixes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;ranges&quot;</span><span class="p">]</span> <span class="k">if</span> <span class="n">r</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">valid_fixes</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Need at least 3 position fixes for trilateration&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Correct ranges for sound speed</span>
+    <span class="n">corrected_ranges</span> <span class="o">=</span> <span class="n">sound_speed_correction</span><span class="p">(</span>
+        <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;ranges&quot;</span><span class="p">],</span> <span class="n">measured_sound_speed</span><span class="p">,</span> <span class="n">true_sound_speed</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Convert to horizontal ranges</span>
+    <span class="n">horizontal_ranges</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">positions</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">range_val</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+        <span class="nb">zip</span><span class="p">(</span><span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;latitudes&quot;</span><span class="p">],</span> <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;longitudes&quot;</span><span class="p">],</span> <span class="n">corrected_ranges</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">range_val</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Skip anchor drop position (range = 0)</span>
+            <span class="n">h_range</span> <span class="o">=</span> <span class="n">horizontal_range</span><span class="p">(</span>
+                <span class="n">range_val</span><span class="p">,</span>
+                <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;water_depth_anchor_launch&quot;</span><span class="p">],</span>
+                <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;release_height&quot;</span><span class="p">],</span>
+                <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;transducer_depth&quot;</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">horizontal_ranges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h_range</span><span class="p">)</span>
+            <span class="n">positions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">))</span>
+
+    <span class="c1"># Initial estimate: center of ship positions</span>
+    <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">positions</span><span class="p">)</span>
+    <span class="n">lon0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+    <span class="n">lat0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+
+    <span class="c1"># Solve using least squares approach</span>
+    <span class="n">anchor_lon</span><span class="p">,</span> <span class="n">anchor_lat</span> <span class="o">=</span> <span class="n">_solve_trilateration</span><span class="p">(</span>
+        <span class="n">positions</span><span class="p">,</span> <span class="n">horizontal_ranges</span><span class="p">,</span> <span class="n">lon0</span><span class="p">,</span> <span class="n">lat0</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Calculate residuals</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">_calculate_residuals</span><span class="p">(</span>
+        <span class="n">positions</span><span class="p">,</span> <span class="n">horizontal_ranges</span><span class="p">,</span> <span class="n">anchor_lon</span><span class="p">,</span> <span class="n">anchor_lat</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Calculate fallback distance from deployment position</span>
+    <span class="n">deploy_lat</span> <span class="o">=</span> <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;latitudes&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">deploy_lon</span> <span class="o">=</span> <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;longitudes&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">fallback_distance</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vincenty_distance</span><span class="p">(</span>
+        <span class="n">deploy_lon</span><span class="p">,</span> <span class="n">deploy_lat</span><span class="p">,</span> <span class="n">anchor_lon</span><span class="p">,</span> <span class="n">anchor_lat</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Error statistics</span>
+    <span class="n">max_residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
+    <span class="n">rms_residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;anchor_lat&quot;</span><span class="p">:</span> <span class="n">anchor_lat</span><span class="p">,</span>
+        <span class="s2">&quot;anchor_lon&quot;</span><span class="p">:</span> <span class="n">anchor_lon</span><span class="p">,</span>
+        <span class="s2">&quot;fallback_distance&quot;</span><span class="p">:</span> <span class="n">fallback_distance</span><span class="p">,</span>
+        <span class="s2">&quot;max_residual&quot;</span><span class="p">:</span> <span class="n">max_residual</span><span class="p">,</span>
+        <span class="s2">&quot;rms_residual&quot;</span><span class="p">:</span> <span class="n">rms_residual</span><span class="p">,</span>
+        <span class="s2">&quot;residuals&quot;</span><span class="p">:</span> <span class="n">residuals</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+    <span class="p">}</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_solve_trilateration</span><span class="p">(</span>
+    <span class="n">positions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="n">ranges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">lon0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lat0</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve trilateration using least squares approach.</span>
+
+<span class="sd">    Based on MATLAB solve_anchor.m algorithm.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    positions : List[Tuple[float, float]]</span>
+<span class="sd">        Ship positions as (lon, lat) tuples in decimal degrees</span>
+<span class="sd">    ranges : List[float]</span>
+<span class="sd">        Horizontal ranges in meters</span>
+<span class="sd">    lon0, lat0 : float</span>
+<span class="sd">        Initial position estimate in decimal degrees</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Tuple[float, float]</span>
+<span class="sd">        Solved position as (lon, lat) in decimal degrees</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_fixes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">positions</span><span class="p">)</span>
+    <span class="n">ranges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span>
+
+    <span class="c1"># Convert positions to Cartesian coordinates relative to initial estimate</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_fixes</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_fixes</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">positions</span><span class="p">):</span>
+        <span class="n">dist</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vincenty_distance</span><span class="p">(</span><span class="n">lon0</span><span class="p">,</span> <span class="n">lat0</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+        <span class="n">azimuth_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">azimuth</span><span class="p">)</span>
+        <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">)</span>  <span class="c1"># East</span>
+        <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dist</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">)</span>  <span class="c1"># North</span>
+
+    <span class="c1"># Set up least squares problem: A * solution = b</span>
+    <span class="c1"># where solution = [delta_x, delta_y] is correction to initial estimate</span>
+
+    <span class="c1"># Calculate terms</span>
+    <span class="n">xyr</span> <span class="o">=</span> <span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">y</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">ranges</span><span class="o">**</span><span class="mi">2</span>
+
+    <span class="c1"># Build matrices for overdetermined system</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_fixes</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_fixes</span><span class="p">)</span>
+
+    <span class="c1"># Use differences between consecutive equations</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">xyr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># d/dx</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>  <span class="c1"># d/dy</span>
+
+    <span class="c1"># Add final equation (difference with first)</span>
+    <span class="n">b</span><span class="p">[</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">xyr</span><span class="p">[</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">xyr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">A</span><span class="p">[</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">A</span><span class="p">[</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">n_fixes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># Solve least squares: solution = (A^T A)^-1 A^T b</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">rcond</span><span class="o">=</span><span class="kc">None</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Unable to solve trilateration - singular matrix&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Convert solution back to geographic coordinates</span>
+    <span class="n">delta_x</span><span class="p">,</span> <span class="n">delta_y</span> <span class="o">=</span> <span class="n">solution</span>
+
+    <span class="c1"># Calculate distance and azimuth of correction</span>
+    <span class="n">correction_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">delta_x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">delta_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">correction_azimuth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">delta_x</span><span class="p">,</span> <span class="n">delta_y</span><span class="p">))</span>
+
+    <span class="c1"># Apply correction to get final position</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.utilities</span><span class="w"> </span><span class="kn">import</span> <span class="n">vincenty_forward</span>
+
+    <span class="n">anchor_lon</span><span class="p">,</span> <span class="n">anchor_lat</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vincenty_forward</span><span class="p">(</span>
+        <span class="n">lon0</span><span class="p">,</span> <span class="n">lat0</span><span class="p">,</span> <span class="n">correction_azimuth</span><span class="p">,</span> <span class="n">correction_dist</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">anchor_lon</span><span class="p">,</span> <span class="n">anchor_lat</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_residuals</span><span class="p">(</span>
+    <span class="n">positions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span>
+    <span class="n">ranges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">anchor_lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">anchor_lat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate residual errors between measured and calculated ranges.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    positions : List[Tuple[float, float]]</span>
+<span class="sd">        Ship positions as (lon, lat) tuples</span>
+<span class="sd">    ranges : List[float]</span>
+<span class="sd">        Measured horizontal ranges in meters</span>
+<span class="sd">    anchor_lon, anchor_lat : float</span>
+<span class="sd">        Calculated anchor position in decimal degrees</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    np.ndarray</span>
+<span class="sd">        Residual errors in meters</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">),</span> <span class="n">measured_range</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">positions</span><span class="p">,</span> <span class="n">ranges</span><span class="p">):</span>
+        <span class="n">calculated_distance</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">vincenty_distance</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">anchor_lon</span><span class="p">,</span> <span class="n">anchor_lat</span><span class="p">)</span>
+        <span class="n">residual</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">calculated_distance</span> <span class="o">-</span> <span class="n">measured_range</span><span class="p">)</span>
+        <span class="n">residuals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">residual</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="iterative_solve_anchor_position">
+<a class="viewcode-back" href="../../api.html#trilatmoor.solve_anchor.iterative_solve_anchor_position">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iterative_solve_anchor_position</span><span class="p">(</span>
+    <span class="n">triang_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">true_sound_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1503</span><span class="p">,</span>
+    <span class="n">measured_sound_speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1507</span><span class="p">,</span>
+    <span class="n">max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Iteratively solve anchor position with improved initial estimate.</span>
+
+<span class="sd">    Based on the two-step approach in MATLAB f_run_anchor.m.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    triang_data : dict</span>
+<span class="sd">        Survey data</span>
+<span class="sd">    true_sound_speed : float</span>
+<span class="sd">        Actual sound speed (m/s)</span>
+<span class="sd">    measured_sound_speed : float</span>
+<span class="sd">        Transducer sound speed (m/s)</span>
+<span class="sd">    max_iterations : int</span>
+<span class="sd">        Maximum number of iterations (default 2)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        Final solution after iterations</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">solve_anchor_position</span><span class="p">(</span>
+        <span class="n">triang_data</span><span class="p">,</span> <span class="n">true_sound_speed</span><span class="p">,</span> <span class="n">measured_sound_speed</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Iterate to improve solution</span>
+    <span class="k">for</span> <span class="n">iteration</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iterations</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># Use previous solution as new starting point</span>
+        <span class="n">previous_solution</span> <span class="o">=</span> <span class="n">solution</span>
+
+        <span class="c1"># Update initial estimate and re-solve</span>
+        <span class="c1"># This mimics the two-step approach in the MATLAB code</span>
+        <span class="n">solution</span> <span class="o">=</span> <span class="n">solve_anchor_position</span><span class="p">(</span>
+            <span class="n">triang_data</span><span class="p">,</span> <span class="n">true_sound_speed</span><span class="p">,</span> <span class="n">measured_sound_speed</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Check for convergence</span>
+        <span class="n">position_change</span> <span class="o">=</span> <span class="n">vincenty_distance</span><span class="p">(</span>
+            <span class="n">previous_solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">],</span>
+            <span class="n">previous_solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">],</span>
+            <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">],</span>
+            <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">],</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">position_change</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>  <span class="c1"># Converged to within 10 cm</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">solution</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

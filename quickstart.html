@@ -1,0 +1,312 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quickstart &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Survey file format" href="data-format.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            trilatmoor
+              <img src="_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quickstart</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#cli-single-survey">CLI — single survey</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#adding-bathymetry">Adding bathymetry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-a-ship-track">Adding a ship track</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#all-options">All options</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#cli-multiple-surveys">CLI — multiple surveys</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-api">Python API</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parse-and-solve">Parse and solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#plot">Plot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gebco-depth-at-the-anchor-position">GEBCO depth at the anchor position</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multi-survey-overview">Multi-survey overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lower-level-pipeline">Lower-level pipeline</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Quickstart</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/quickstart.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="quickstart">
+<h1>Quickstart<a class="headerlink" href="#quickstart" title="Link to this heading"></a></h1>
+<section id="cli-single-survey">
+<h2>CLI — single survey<a class="headerlink" href="#cli-single-survey" title="Link to this heading"></a></h2>
+<p>The most common workflow: process one triangulation file, write a plot and a
+position text file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>trilatmoor<span class="w"> </span>-c<span class="w"> </span>examples/data/dsG1_triangulation.txt<span class="w"> </span>-o<span class="w"> </span>results/<span class="w"> </span>--output<span class="w"> </span>dsG1
+</pre></div>
+</div>
+<p>This creates:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">results/dsG1.png</span></code> — map with range circles, anchor position marker, and
+(optionally) bathymetry isobaths</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">results/dsG1_anchorposition.txt</span></code> — anchor position, quality metrics, and
+survey parameters</p></li>
+</ul>
+<section id="adding-bathymetry">
+<h3>Adding bathymetry<a class="headerlink" href="#adding-bathymetry" title="Link to this heading"></a></h3>
+<p>Point to a directory containing the GEBCO or ETOPO NetCDF file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>trilatmoor<span class="w"> </span>-c<span class="w"> </span>survey.txt<span class="w"> </span>-o<span class="w"> </span>results/<span class="w"> </span>--output<span class="w"> </span>dsG1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bathy-dir<span class="w"> </span>/data/bathymetry<span class="w"> </span>--bathy-source<span class="w"> </span>gebco2025
+</pre></div>
+</div>
+</section>
+<section id="adding-a-ship-track">
+<h3>Adding a ship track<a class="headerlink" href="#adding-a-ship-track" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>trilatmoor<span class="w"> </span>-c<span class="w"> </span>survey.txt<span class="w"> </span>-o<span class="w"> </span>results/<span class="w"> </span>--output<span class="w"> </span>dsG1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--ship-track<span class="w"> </span>/data/merian_track.nc<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--time-interval-hr<span class="w"> </span>-12<span class="w"> </span><span class="m">12</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">--time-interval-hr</span></code> window is relative to the survey timestamps in the
+survey file; ±12 h is the default.</p>
+</section>
+<section id="all-options">
+<h3>All options<a class="headerlink" href="#all-options" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Flag</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">-c</span> <span class="pre">/</span> <span class="pre">--config</span></code></p></td>
+<td><p>required</p></td>
+<td><p>Survey file path</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">/</span> <span class="pre">--output-directory</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">.</span></code></p></td>
+<td><p>Directory for output files</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span></code></p></td>
+<td><p>survey <code class="docutils literal notranslate"><span class="pre">Loc_name</span></code></p></td>
+<td><p>Base filename (no extension)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--sound-speed</span></code></p></td>
+<td><p>—</p></td>
+<td><p>True sound speed in m/s (overrides file value)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--bathy-dir</span></code></p></td>
+<td><p>—</p></td>
+<td><p>Directory containing bathymetry NetCDF files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--bathy-source</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gebco2025</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">gebco2025</span></code>, <code class="docutils literal notranslate"><span class="pre">gebco2023</span></code>, <code class="docutils literal notranslate"><span class="pre">gebco</span></code>, <code class="docutils literal notranslate"><span class="pre">etopo</span></code>, <code class="docutils literal notranslate"><span class="pre">auto</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--ship-track</span></code></p></td>
+<td><p>—</p></td>
+<td><p>Ship track NetCDF file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--time-interval-hr</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-12</span> <span class="pre">12</span></code></p></td>
+<td><p>Hours around survey for ship track</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--figsize</span></code></p></td>
+<td><p>matplotlib default</p></td>
+<td><p>Figure size in inches, e.g. <code class="docutils literal notranslate"><span class="pre">--figsize</span> <span class="pre">10</span> <span class="pre">8</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--no-title</span></code></p></td>
+<td><p>false</p></td>
+<td><p>Suppress the figure title</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--no-legend</span></code></p></td>
+<td><p>false</p></td>
+<td><p>Suppress the legend</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--format</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">all</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">all</span></code>, <code class="docutils literal notranslate"><span class="pre">png</span></code>, <code class="docutils literal notranslate"><span class="pre">grid</span></code> (<code class="docutils literal notranslate"><span class="pre">--multi</span></code> only), or <code class="docutils literal notranslate"><span class="pre">txt</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="cli-multiple-surveys">
+<h2>CLI — multiple surveys<a class="headerlink" href="#cli-multiple-surveys" title="Link to this heading"></a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>trilatmoor<span class="w"> </span>--multi<span class="w"> </span>data/dsG1.txt<span class="w"> </span>data/dsG2.txt<span class="w"> </span>data/dsG3.txt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-o<span class="w"> </span>results/<span class="w"> </span>--output<span class="w"> </span>G_series
+</pre></div>
+</div>
+<p>Generates a single overview map showing all anchor positions and a summary
+table (<code class="docutils literal notranslate"><span class="pre">G_series_summary.txt</span></code>).</p>
+</section>
+<hr class="docutils" />
+<section id="python-api">
+<h2>Python API<a class="headerlink" href="#python-api" title="Link to this heading"></a></h2>
+<section id="parse-and-solve">
+<h3>Parse and solve<a class="headerlink" href="#parse-and-solve" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">trilatmoor</span>
+
+<span class="c1"># One-step convenience function</span>
+<span class="n">triang_data</span><span class="p">,</span> <span class="n">solution</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">process_survey_file</span><span class="p">(</span><span class="s2">&quot;survey.txt&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Anchor: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;anchor_lat&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">°N, </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;anchor_lon&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">°W&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMS residual: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;rms_residual&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> m&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fallback distance: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;fallback_distance&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> m&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="plot">
+<h3>Plot<a class="headerlink" href="#plot" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">plot_trilateration_survey</span><span class="p">(</span>
+    <span class="n">triang_data</span><span class="p">,</span>
+    <span class="n">solution</span><span class="p">,</span>
+    <span class="n">bathymetry</span><span class="o">=</span><span class="s2">&quot;/data/GEBCO_2025.nc&quot;</span><span class="p">,</span>   <span class="c1"># optional</span>
+    <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;survey.png&quot;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="gebco-depth-at-the-anchor-position">
+<h3>GEBCO depth at the anchor position<a class="headerlink" href="#gebco-depth-at-the-anchor-position" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">depth</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">query_depth_at_position</span><span class="p">(</span>
+    <span class="s2">&quot;/data/GEBCO_2025.nc&quot;</span><span class="p">,</span>
+    <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">],</span>
+    <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GEBCO depth at anchor: </span><span class="si">{</span><span class="n">depth</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> m&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multi-survey-overview">
+<h3>Multi-survey overview<a class="headerlink" href="#multi-survey-overview" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">files</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;data/dsG1.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;data/dsG2.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;data/dsG3.txt&quot;</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">plot_multiple_surveys</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="lower-level-pipeline">
+<h3>Lower-level pipeline<a class="headerlink" href="#lower-level-pipeline" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">trilatmoor</span><span class="w"> </span><span class="kn">import</span> <span class="n">parse_triangulation_file</span><span class="p">,</span> <span class="n">solve_anchor_position</span>
+
+<span class="n">triang_data</span> <span class="o">=</span> <span class="n">parse_triangulation_file</span><span class="p">(</span><span class="s2">&quot;survey.txt&quot;</span><span class="p">)</span>
+<span class="n">solution</span>     <span class="o">=</span> <span class="n">solve_anchor_position</span><span class="p">(</span><span class="n">triang_data</span><span class="p">,</span> <span class="n">true_sound_speed</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="data-format.html" class="btn btn-neutral float-right" title="Survey file format" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

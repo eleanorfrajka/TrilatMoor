@@ -1,0 +1,548 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>trilatmoor.utilities &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            trilatmoor
+              <img src="../../_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">trilatmoor.utilities</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for trilatmoor.utilities</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utilities for trilateration calculations including geodetic functions.</span>
+
+<span class="sd">Based on MATLAB m_map functions using Vincenty&#39;s algorithms for high accuracy.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="c1"># WGS84 ellipsoid parameters</span>
+<span class="n">WGS84_A</span> <span class="o">=</span> <span class="mf">6378137.0</span>  <span class="c1"># Semi-major axis (meters)</span>
+<span class="n">WGS84_F</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="mf">298.257223563</span>  <span class="c1"># Flattening</span>
+<span class="n">WGS84_B</span> <span class="o">=</span> <span class="n">WGS84_A</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">WGS84_F</span><span class="p">)</span>  <span class="c1"># Semi-minor axis</span>
+
+
+<div class="viewcode-block" id="vincenty_distance">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.vincenty_distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">vincenty_distance</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate distance between two points using Vincenty&#39;s inverse formula.</span>
+
+<span class="sd">    Based on MATLAB m_idist.m - highly accurate ellipsoidal distance calculation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lon1, lat1 : float</span>
+<span class="sd">        First point coordinates in decimal degrees</span>
+<span class="sd">    lon2, lat2 : float</span>
+<span class="sd">        Second point coordinates in decimal degrees</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distance : float</span>
+<span class="sd">        Distance in meters</span>
+<span class="sd">    azimuth_forward : float</span>
+<span class="sd">        Forward azimuth in degrees (from point 1 to point 2)</span>
+<span class="sd">    azimuth_backward : float</span>
+<span class="sd">        Backward azimuth in degrees (from point 2 to point 1)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert to radians</span>
+    <span class="n">lat1_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span>
+    <span class="n">lat2_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat2</span><span class="p">)</span>
+    <span class="n">lon1_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon1</span><span class="p">)</span>
+    <span class="n">lon2_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon2</span><span class="p">)</span>
+
+    <span class="c1"># Handle pole proximity (within 1e-10 degrees)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lat1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">lat1_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">copysign</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">),</span> <span class="n">lat1_rad</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lat2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">lat2_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">copysign</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">),</span> <span class="n">lat2_rad</span><span class="p">)</span>
+
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">WGS84_A</span><span class="p">,</span> <span class="n">WGS84_B</span><span class="p">,</span> <span class="n">WGS84_F</span>
+
+    <span class="n">U1</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">lat1_rad</span><span class="p">))</span>
+    <span class="n">U2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">lat2_rad</span><span class="p">))</span>
+
+    <span class="c1"># Longitude difference (shortest path)</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">((</span><span class="n">lon2</span> <span class="o">%</span> <span class="mi">360</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="n">lon1</span> <span class="o">%</span> <span class="mi">360</span><span class="p">))</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">if</span> <span class="n">L</span> <span class="o">&gt;</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">-</span> <span class="n">L</span>
+
+    <span class="n">lambda_val</span> <span class="o">=</span> <span class="n">L</span>
+    <span class="n">lambda_old</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">itercount</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># Initialize variables to handle early loop exit</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sin_sigma</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cos_sigma</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">cos2_sigma_m</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lambda_val</span> <span class="o">-</span> <span class="n">lambda_old</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-12</span> <span class="ow">and</span> <span class="n">itercount</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+        <span class="n">itercount</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">sin_sigma</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="o">+</span> <span class="p">(</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span>
+                <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">cos_sigma</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+            <span class="n">U2</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">sin_sigma</span><span class="p">,</span> <span class="n">cos_sigma</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">sin_sigma</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Points are coincident</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span> <span class="o">/</span> <span class="n">sin_sigma</span>
+            <span class="p">)</span>
+
+        <span class="n">cos2_sigma_m</span> <span class="o">=</span> <span class="n">cos_sigma</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="n">f</span> <span class="o">/</span> <span class="mi">16</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4</span> <span class="o">+</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="n">lambda_old</span> <span class="o">=</span> <span class="n">lambda_val</span>
+        <span class="n">lambda_val</span> <span class="o">=</span> <span class="n">L</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">C</span><span class="p">)</span> <span class="o">*</span> <span class="n">f</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+            <span class="n">sigma</span>
+            <span class="o">+</span> <span class="n">C</span>
+            <span class="o">*</span> <span class="n">sin_sigma</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">cos2_sigma_m</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="n">cos_sigma</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cos2_sigma_m</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Handle antipodal points</span>
+        <span class="k">if</span> <span class="n">lambda_val</span> <span class="o">&gt;</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+            <span class="n">lambda_val</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+            <span class="k">break</span>
+
+    <span class="n">u2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">/</span> <span class="mi">16384</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4096</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">768</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">320</span> <span class="o">-</span> <span class="mi">175</span> <span class="o">*</span> <span class="n">u2</span><span class="p">)))</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">u2</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">*</span> <span class="p">(</span><span class="mi">256</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">128</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">74</span> <span class="o">-</span> <span class="mi">47</span> <span class="o">*</span> <span class="n">u2</span><span class="p">)))</span>
+
+    <span class="n">delta_sigma</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">B</span>
+        <span class="o">*</span> <span class="n">sin_sigma</span>
+        <span class="o">*</span> <span class="p">(</span>
+            <span class="n">cos2_sigma_m</span>
+            <span class="o">+</span> <span class="n">B</span>
+            <span class="o">/</span> <span class="mi">4</span>
+            <span class="o">*</span> <span class="p">(</span>
+                <span class="n">cos_sigma</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cos2_sigma_m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="o">-</span> <span class="n">B</span>
+                <span class="o">/</span> <span class="mi">6</span>
+                <span class="o">*</span> <span class="n">cos2_sigma_m</span>
+                <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">sin_sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">cos2_sigma_m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">b</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma</span> <span class="o">-</span> <span class="n">delta_sigma</span><span class="p">)</span>
+
+    <span class="c1"># Calculate azimuths</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>  <span class="c1"># Same point</span>
+        <span class="n">azimuth_forward</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">azimuth_backward</span> <span class="o">=</span> <span class="mi">180</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Correct sign for azimuth calculation</span>
+        <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">lon2</span> <span class="o">-</span> <span class="n">lon1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">lambda_val</span> <span class="o">=</span> <span class="o">-</span><span class="n">lambda_val</span>
+
+        <span class="c1"># Forward azimuth</span>
+        <span class="n">numer</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+            <span class="n">lambda_val</span>
+        <span class="p">)</span>
+        <span class="n">azimuth_forward</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">numer</span><span class="p">,</span> <span class="n">denom</span><span class="p">))</span> <span class="o">%</span> <span class="mi">360</span>
+
+        <span class="c1"># Backward azimuth</span>
+        <span class="n">numer</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lambda_val</span><span class="p">)</span>
+        <span class="n">denom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U2</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+            <span class="n">lambda_val</span>
+        <span class="p">)</span>
+        <span class="n">azimuth_backward</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">numer</span><span class="p">,</span> <span class="n">denom</span><span class="p">))</span> <span class="o">%</span> <span class="mi">360</span>
+
+    <span class="k">return</span> <span class="n">distance</span><span class="p">,</span> <span class="n">azimuth_forward</span><span class="p">,</span> <span class="n">azimuth_backward</span></div>
+
+
+
+<div class="viewcode-block" id="vincenty_forward">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.vincenty_forward">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">vincenty_forward</span><span class="p">(</span><span class="n">lon1</span><span class="p">,</span> <span class="n">lat1</span><span class="p">,</span> <span class="n">azimuth</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate endpoint given start point, azimuth, and distance using Vincenty&#39;s direct formula.</span>
+
+<span class="sd">    Based on MATLAB m_fdist.m for high accuracy forward calculations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lon1, lat1 : float</span>
+<span class="sd">        Starting point coordinates in decimal degrees</span>
+<span class="sd">    azimuth : float</span>
+<span class="sd">        Forward azimuth in degrees (clockwise from north)</span>
+<span class="sd">    distance : float</span>
+<span class="sd">        Distance in meters</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    lon2, lat2 : float</span>
+<span class="sd">        Endpoint coordinates in decimal degrees</span>
+<span class="sd">    azimuth_back : float</span>
+<span class="sd">        Backward azimuth in degrees</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert to radians</span>
+    <span class="n">lat1_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lat1</span><span class="p">)</span>
+    <span class="n">lon1_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">lon1</span><span class="p">)</span>
+    <span class="n">azimuth_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">azimuth</span><span class="p">)</span>
+
+    <span class="c1"># Handle pole proximity</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">lat1</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">lat1_rad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">copysign</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="mi">90</span> <span class="o">-</span> <span class="mf">1e-10</span><span class="p">),</span> <span class="n">lat1_rad</span><span class="p">)</span>
+
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">WGS84_A</span><span class="p">,</span> <span class="n">WGS84_B</span><span class="p">,</span> <span class="n">WGS84_F</span>
+
+    <span class="n">U1</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">lat1_rad</span><span class="p">))</span>
+    <span class="n">sigma1</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">U1</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">))</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">asin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">))</span>
+
+    <span class="n">u2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">a</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">/</span> <span class="mi">16384</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4096</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">768</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">320</span> <span class="o">-</span> <span class="mi">175</span> <span class="o">*</span> <span class="n">u2</span><span class="p">)))</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">u2</span> <span class="o">/</span> <span class="mi">1024</span> <span class="o">*</span> <span class="p">(</span><span class="mi">256</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">128</span> <span class="o">+</span> <span class="n">u2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">74</span> <span class="o">-</span> <span class="mi">47</span> <span class="o">*</span> <span class="n">u2</span><span class="p">)))</span>
+
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">A</span><span class="p">)</span>
+    <span class="n">sigma_old</span> <span class="o">=</span> <span class="n">sigma</span>
+    <span class="n">itercount</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">itercount</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+        <span class="n">itercount</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">sigma_m2</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sigma1</span> <span class="o">+</span> <span class="n">sigma</span>
+        <span class="n">cos2_sigma_m</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma_m2</span><span class="p">)</span>
+
+        <span class="n">delta_sigma</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">B</span>
+            <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="o">*</span> <span class="p">(</span>
+                <span class="n">cos2_sigma_m</span>
+                <span class="o">+</span> <span class="n">B</span>
+                <span class="o">/</span> <span class="mi">4</span>
+                <span class="o">*</span> <span class="p">(</span>
+                    <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cos2_sigma_m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                    <span class="o">-</span> <span class="n">B</span>
+                    <span class="o">/</span> <span class="mi">6</span>
+                    <span class="o">*</span> <span class="n">cos2_sigma_m</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">3</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">cos2_sigma_m</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">sigma_old</span> <span class="o">=</span> <span class="n">sigma</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">*</span> <span class="n">A</span><span class="p">)</span> <span class="o">+</span> <span class="n">delta_sigma</span>
+
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">sigma</span> <span class="o">-</span> <span class="n">sigma_old</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">1e-12</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="c1"># Calculate final position</span>
+    <span class="n">numer</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">)</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+        <span class="n">azimuth_rad</span>
+    <span class="p">)</span>
+    <span class="n">lambda_val</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">numer</span><span class="p">,</span> <span class="n">denom</span><span class="p">)</span>
+
+    <span class="n">C</span> <span class="o">=</span> <span class="n">f</span> <span class="o">/</span> <span class="mi">16</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4</span> <span class="o">+</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="mi">4</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">lambda_val</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">C</span><span class="p">)</span> <span class="o">*</span> <span class="n">f</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">sigma</span>
+        <span class="o">+</span> <span class="n">C</span>
+        <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cos2_sigma_m</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cos2_sigma_m</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+    <span class="p">)</span>
+
+    <span class="n">lon2</span> <span class="o">=</span> <span class="p">(</span><span class="n">lon1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">L</span><span class="p">))</span> <span class="o">%</span> <span class="mi">360</span>
+    <span class="k">if</span> <span class="n">lon2</span> <span class="o">&gt;</span> <span class="mi">180</span><span class="p">:</span>
+        <span class="n">lon2</span> <span class="o">-=</span> <span class="mi">360</span>
+
+    <span class="n">numer</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span>
+        <span class="n">azimuth_rad</span>
+    <span class="p">)</span>
+    <span class="n">denom</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="o">+</span> <span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">lat2</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">numer</span><span class="p">,</span> <span class="n">denom</span><span class="p">))</span>
+
+    <span class="c1"># Backward azimuth</span>
+    <span class="n">azimuth_back</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span>
+                <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">),</span>
+                <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
+                <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">U1</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">azimuth_rad</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="o">%</span> <span class="mi">360</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lon2</span><span class="p">,</span> <span class="n">lat2</span><span class="p">,</span> <span class="n">azimuth_back</span></div>
+
+
+
+<div class="viewcode-block" id="dec2deg">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.dec2deg">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dec2deg</span><span class="p">(</span><span class="n">decimal_degrees</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert decimal degrees to degrees and decimal minutes.</span>
+
+<span class="sd">    Based on MATLAB dec2deg.m function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    decimal_degrees : float</span>
+<span class="sd">        Coordinate in decimal degrees</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    degrees : int</span>
+<span class="sd">        Whole degrees</span>
+<span class="sd">    minutes : float</span>
+<span class="sd">        Decimal minutes</span>
+<span class="sd">    deg_str : str</span>
+<span class="sd">        Formatted string representation</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">decimal_degrees</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;0°&quot;</span>
+
+    <span class="n">abs_val</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">decimal_degrees</span><span class="p">)</span>
+    <span class="n">degrees</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">abs_val</span><span class="p">)</span>
+    <span class="n">minutes</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">abs_val</span> <span class="o">-</span> <span class="n">degrees</span><span class="p">)</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>  <span class="c1"># Round to 2 decimals</span>
+
+    <span class="k">if</span> <span class="n">minutes</span> <span class="o">&gt;=</span> <span class="mi">60</span><span class="p">:</span>
+        <span class="n">degrees</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">minutes</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">minutes</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">deg_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">degrees</span><span class="si">}</span><span class="s2">°&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">deg_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">degrees</span><span class="si">}</span><span class="s2">°</span><span class="si">{</span><span class="n">minutes</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+
+    <span class="k">return</span> <span class="n">degrees</span><span class="p">,</span> <span class="n">minutes</span><span class="p">,</span> <span class="n">deg_str</span></div>
+
+
+
+<div class="viewcode-block" id="deg2dec">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.deg2dec">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">deg2dec</span><span class="p">(</span><span class="n">degrees</span><span class="p">,</span> <span class="n">minutes</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert degrees and minutes to decimal degrees.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    degrees : int</span>
+<span class="sd">        Whole degrees</span>
+<span class="sd">    minutes : float</span>
+<span class="sd">        Decimal minutes</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    decimal_degrees : float</span>
+<span class="sd">        Coordinate in decimal degrees</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">degrees</span> <span class="o">+</span> <span class="n">minutes</span> <span class="o">/</span> <span class="mi">60</span></div>
+
+
+
+<div class="viewcode-block" id="sound_speed_correction">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.sound_speed_correction">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sound_speed_correction</span><span class="p">(</span><span class="n">measured_range</span><span class="p">,</span> <span class="n">measured_speed</span><span class="o">=</span><span class="mi">1507</span><span class="p">,</span> <span class="n">true_speed</span><span class="o">=</span><span class="mi">1503</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Correct acoustic ranges for sound speed differences.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    measured_range : float or array</span>
+<span class="sd">        Measured ranges in meters</span>
+<span class="sd">    measured_speed : float</span>
+<span class="sd">        Sound speed used by transducer (m/s), default 1507 m/s</span>
+<span class="sd">    true_speed : float</span>
+<span class="sd">        True sound speed (m/s), default 1503 m/s</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    corrected_range : float or array</span>
+<span class="sd">        Range corrected for true sound speed</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">measured_range</span><span class="p">)</span> <span class="o">*</span> <span class="n">true_speed</span> <span class="o">/</span> <span class="n">measured_speed</span></div>
+
+
+
+<div class="viewcode-block" id="horizontal_range">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.horizontal_range">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">horizontal_range</span><span class="p">(</span><span class="n">slant_range</span><span class="p">,</span> <span class="n">water_depth</span><span class="p">,</span> <span class="n">release_height</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">transducer_depth</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate horizontal range from slant range and water depth.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    slant_range : float or array</span>
+<span class="sd">        Slant range measurements in meters</span>
+<span class="sd">    water_depth : float</span>
+<span class="sd">        Water depth at anchor position in meters</span>
+<span class="sd">    release_height : float</span>
+<span class="sd">        Height of release above seafloor in meters (default 1m)</span>
+<span class="sd">    transducer_depth : float</span>
+<span class="sd">        Depth of ship&#39;s transducer below surface in meters (default 10m)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    horizontal_range : float or array</span>
+<span class="sd">        Horizontal range in meters</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">vertical_separation</span> <span class="o">=</span> <span class="n">water_depth</span> <span class="o">-</span> <span class="n">release_height</span> <span class="o">-</span> <span class="n">transducer_depth</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">slant_range</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">vertical_separation</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="round_to_n">
+<a class="viewcode-back" href="../../api.html#trilatmoor.utilities.round_to_n">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">round_to_n</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Round value to nearest 1/n.</span>
+
+<span class="sd">    Based on MATLAB r100.m function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        Value to round</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Rounding factor (default 100 for rounding to hundredths)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    rounded_value : float</span>
+<span class="sd">        Rounded value</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">round</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="n">value</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

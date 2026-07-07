@@ -1,0 +1,823 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API reference &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Demo notebook snippet for manual trilateration input." href="demo_G1-output.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            trilatmoor
+              <img src="_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-trilatmoor.read_dship">Parsing — <code class="docutils literal notranslate"><span class="pre">read_dship</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.read_dship.interpolate_ship_position"><code class="docutils literal notranslate"><span class="pre">interpolate_ship_position()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.read_dship.parse_triangulation_file"><code class="docutils literal notranslate"><span class="pre">parse_triangulation_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.read_dship.update_triangulation_with_ship_track"><code class="docutils literal notranslate"><span class="pre">update_triangulation_with_ship_track()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-trilatmoor.solve_anchor">Solving — <code class="docutils literal notranslate"><span class="pre">solve_anchor</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.solve_anchor.iterative_solve_anchor_position"><code class="docutils literal notranslate"><span class="pre">iterative_solve_anchor_position()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.solve_anchor.solve_anchor_position"><code class="docutils literal notranslate"><span class="pre">solve_anchor_position()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-trilatmoor.plotting">Plotting — <code class="docutils literal notranslate"><span class="pre">plotting</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.extract_survey_time_range"><code class="docutils literal notranslate"><span class="pre">extract_survey_time_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.load_bathymetry_netcdf"><code class="docutils literal notranslate"><span class="pre">load_bathymetry_netcdf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.load_bathymetry_netcdf_subsampled"><code class="docutils literal notranslate"><span class="pre">load_bathymetry_netcdf_subsampled()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.load_ship_track_netcdf"><code class="docutils literal notranslate"><span class="pre">load_ship_track_netcdf()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.parse_survey_file"><code class="docutils literal notranslate"><span class="pre">parse_survey_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.plot_multiple_solutions"><code class="docutils literal notranslate"><span class="pre">plot_multiple_solutions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.plot_multiple_surveys"><code class="docutils literal notranslate"><span class="pre">plot_multiple_surveys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.plot_survey_grid"><code class="docutils literal notranslate"><span class="pre">plot_survey_grid()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.plot_trilateration_survey"><code class="docutils literal notranslate"><span class="pre">plot_trilateration_survey()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.process_survey_file"><code class="docutils literal notranslate"><span class="pre">process_survey_file()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.query_depth_at_position"><code class="docutils literal notranslate"><span class="pre">query_depth_at_position()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.plotting.save_cropped_figure"><code class="docutils literal notranslate"><span class="pre">save_cropped_figure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-trilatmoor.utilities">Utilities — <code class="docutils literal notranslate"><span class="pre">utilities</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.dec2deg"><code class="docutils literal notranslate"><span class="pre">dec2deg()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.deg2dec"><code class="docutils literal notranslate"><span class="pre">deg2dec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.horizontal_range"><code class="docutils literal notranslate"><span class="pre">horizontal_range()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.round_to_n"><code class="docutils literal notranslate"><span class="pre">round_to_n()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.sound_speed_correction"><code class="docutils literal notranslate"><span class="pre">sound_speed_correction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.vincenty_distance"><code class="docutils literal notranslate"><span class="pre">vincenty_distance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.utilities.vincenty_forward"><code class="docutils literal notranslate"><span class="pre">vincenty_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-trilatmoor.cli">CLI — <code class="docutils literal notranslate"><span class="pre">cli</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.cli.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.cli.process_multiple_surveys"><code class="docutils literal notranslate"><span class="pre">process_multiple_surveys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.cli.process_single_survey"><code class="docutils literal notranslate"><span class="pre">process_single_survey()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#trilatmoor.cli.write_anchor_position_file"><code class="docutils literal notranslate"><span class="pre">write_anchor_position_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api-reference">
+<h1>API reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
+<p>All public functions are re-exported from the top-level <code class="xref py py-mod docutils literal notranslate"><span class="pre">trilatmoor</span></code>
+package, so <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">trilatmoor</span> <span class="pre">import</span> <span class="pre">&lt;name&gt;</span></code> works for every symbol listed
+here.</p>
+<nav class="contents local" id="modules">
+<p class="topic-title">Modules</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#module-trilatmoor.read_dship" id="id7">Parsing — <code class="docutils literal notranslate"><span class="pre">read_dship</span></code></a></p></li>
+<li><p><a class="reference internal" href="#module-trilatmoor.solve_anchor" id="id8">Solving — <code class="docutils literal notranslate"><span class="pre">solve_anchor</span></code></a></p></li>
+<li><p><a class="reference internal" href="#module-trilatmoor.plotting" id="id9">Plotting — <code class="docutils literal notranslate"><span class="pre">plotting</span></code></a></p></li>
+<li><p><a class="reference internal" href="#module-trilatmoor.utilities" id="id10">Utilities — <code class="docutils literal notranslate"><span class="pre">utilities</span></code></a></p></li>
+<li><p><a class="reference internal" href="#module-trilatmoor.cli" id="id11">CLI — <code class="docutils literal notranslate"><span class="pre">cli</span></code></a></p></li>
+</ul>
+</nav>
+<section id="module-trilatmoor.read_dship">
+<span id="parsing-read-dship"></span><h2><a class="toc-backref" href="#id7" role="doc-backlink">Parsing — <code class="docutils literal notranslate"><span class="pre">read_dship</span></code></a><a class="headerlink" href="#module-trilatmoor.read_dship" title="Link to this heading"></a></h2>
+<p>Reader functions for DShip and triangulation data files.</p>
+<p>Based on MATLAB f_parse_triangl.m for reading triangulation files.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.read_dship.interpolate_ship_position">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.read_dship.</span></span><span class="sig-name descname"><span class="pre">interpolate_ship_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ship_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">datetime</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/trilatmoor/read_dship.html#interpolate_ship_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.read_dship.interpolate_ship_position" title="Link to this definition"></a></dt>
+<dd><p>Interpolate ship position from track data at specified times.</p>
+<p>Based on the ship position interpolation in MATLAB run_anchors.m.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ship_track</strong> (<em>dict</em>) – Dictionary with keys ‘time’, ‘lat’, ‘lon’ containing track data
+Times should be datetime objects or matlab datenum values</p></li>
+<li><p><strong>target_times</strong> (<em>List</em><em>[</em><em>datetime</em><em>]</em>) – Times at which to interpolate positions</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of (lat, lon) tuples for each target time</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[tuple]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.read_dship.parse_triangulation_file">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.read_dship.</span></span><span class="sig-name descname"><span class="pre">parse_triangulation_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/read_dship.html#parse_triangulation_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.read_dship.parse_triangulation_file" title="Link to this definition"></a></dt>
+<dd><p>Parse triangulation data file in the format expected by the MATLAB code.</p>
+<p>Based on MATLAB f_parse_triangl.m function.</p>
+<p>File format:
+<a href="#id1"><span class="problematic" id="id2">``</span></a>`
+Release_height (m): 1
+Transducer_depth (m): 10
+Water_depth_anchor_launch (m): 2690
+Loc_name: GB2LZ</p>
+<p># Date (yyyy/mm/dd HH:MM:SS) Range Position (Lat / Lon)
+2023/09/30 18:58:05 0      42 42.016 -51 -53.984
+2023/09/30 19:22:37 2832   42 42.387 -51 -54.478
+2023/09/30 19:40:20 2876   42 42.093 -51 -53.360
+2023/09/30 19:55:20 2823   42 41.509 -51 -54.325
+<a href="#id3"><span class="problematic" id="id4">``</span></a><a href="#id5"><span class="problematic" id="id6">`</span></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Path to triangulation file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed triangulation data with keys: ‘loc_name’, ‘release_height’,
+‘transducer_depth’, ‘water_depth_anchor_launch’, ‘times’, ‘ranges’,
+‘latitudes’, ‘longitudes’</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>FileNotFoundError</strong> – If file doesn’t exist</p></li>
+<li><p><strong>ValueError</strong> – If file format is invalid</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.read_dship.update_triangulation_with_ship_track">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.read_dship.</span></span><span class="sig-name descname"><span class="pre">update_triangulation_with_ship_track</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triang_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ship_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/read_dship.html#update_triangulation_with_ship_track"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.read_dship.update_triangulation_with_ship_track" title="Link to this definition"></a></dt>
+<dd><p>Update triangulation data positions using interpolated ship track.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triang_data</strong> (<em>dict</em>) – Original triangulation data</p></li>
+<li><p><strong>ship_track</strong> (<em>dict</em>) – Ship track data with ‘time’, ‘lat’, ‘lon’ keys</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated triangulation data with interpolated positions</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-trilatmoor.solve_anchor">
+<span id="solving-solve-anchor"></span><h2><a class="toc-backref" href="#id8" role="doc-backlink">Solving — <code class="docutils literal notranslate"><span class="pre">solve_anchor</span></code></a><a class="headerlink" href="#module-trilatmoor.solve_anchor" title="Link to this heading"></a></h2>
+<p>Core trilateration algorithm for determining anchor positions.</p>
+<p>Based on MATLAB solve_anchor.m using least-squares solution.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.solve_anchor.iterative_solve_anchor_position">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.solve_anchor.</span></span><span class="sig-name descname"><span class="pre">iterative_solve_anchor_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triang_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1503</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1507</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/solve_anchor.html#iterative_solve_anchor_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.solve_anchor.iterative_solve_anchor_position" title="Link to this definition"></a></dt>
+<dd><p>Iteratively solve anchor position with improved initial estimate.</p>
+<p>Based on the two-step approach in MATLAB f_run_anchor.m.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triang_data</strong> (<em>dict</em>) – Survey data</p></li>
+<li><p><strong>true_sound_speed</strong> (<em>float</em>) – Actual sound speed (m/s)</p></li>
+<li><p><strong>measured_sound_speed</strong> (<em>float</em>) – Transducer sound speed (m/s)</p></li>
+<li><p><strong>max_iterations</strong> (<em>int</em>) – Maximum number of iterations (default 2)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Final solution after iterations</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.solve_anchor.solve_anchor_position">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.solve_anchor.</span></span><span class="sig-name descname"><span class="pre">solve_anchor_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triang_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1503</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1507</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/solve_anchor.html#solve_anchor_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.solve_anchor.solve_anchor_position" title="Link to this definition"></a></dt>
+<dd><p>Solve for anchor position using trilateration with multiple ship positions.</p>
+<p>Based on MATLAB solve_anchor.m and f_run_anchor.m functions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triang_data</strong> (<em>dict</em>) – Survey data containing ship positions and ranges with keys:
+- ‘latitudes’, ‘longitudes’, ‘ranges’, ‘water_depth_anchor_launch’
+- ‘release_height’, ‘transducer_depth’</p></li>
+<li><p><strong>true_sound_speed</strong> (<em>float</em>) – Actual sound speed (m/s), default 1503 m/s</p></li>
+<li><p><strong>measured_sound_speed</strong> (<em>float</em>) – Sound speed used by transducer (m/s), default 1507 m/s</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Solution with keys: ‘anchor_lat’, ‘anchor_lon’, ‘fallback_distance’,
+‘max_residual’, ‘rms_residual’, ‘residuals’</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If insufficient data for trilateration</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-trilatmoor.plotting">
+<span id="plotting-plotting"></span><h2><a class="toc-backref" href="#id9" role="doc-backlink">Plotting — <code class="docutils literal notranslate"><span class="pre">plotting</span></code></a><a class="headerlink" href="#module-trilatmoor.plotting" title="Link to this heading"></a></h2>
+<p>Plotting functions for trilateration visualization.</p>
+<p>Based on MATLAB f_run_anchor.m plotting functionality.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.extract_survey_time_range">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">extract_survey_time_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triang_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/plotting.html#extract_survey_time_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.extract_survey_time_range" title="Link to this definition"></a></dt>
+<dd><p>Extract start and end times from survey data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>triang_data</strong> (<em>dict</em>) – Trilateration data containing ‘times’ key</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(start_time, end_time) as datetime objects</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.load_bathymetry_netcdf">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">load_bathymetry_netcdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">netcdf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#load_bathymetry_netcdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.load_bathymetry_netcdf" title="Link to this definition"></a></dt>
+<dd><p>Load bathymetry data from NetCDF file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>netcdf_path</strong> (<em>str</em>) – Path to NetCDF bathymetry file</p></li>
+<li><p><strong>lon_bounds</strong> (<em>tuple</em><em>, </em><em>optional</em>) – (min_lon, max_lon) to load only a regional subset. Strongly recommended
+for large global files such as GEBCO to avoid reading the full file.</p></li>
+<li><p><strong>lat_bounds</strong> (<em>tuple</em><em>, </em><em>optional</em>) – (min_lat, max_lat) to load only a regional subset.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Bathymetry data with ‘lat’, ‘lon’, ‘depth’ keys</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.load_bathymetry_netcdf_subsampled">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">load_bathymetry_netcdf_subsampled</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">netcdf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat_bounds</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#load_bathymetry_netcdf_subsampled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.load_bathymetry_netcdf_subsampled" title="Link to this definition"></a></dt>
+<dd><p>Load bathymetry data from NetCDF file with regional clipping and subsampling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>netcdf_path</strong> (<em>str</em>) – Path to NetCDF bathymetry file</p></li>
+<li><p><strong>lon_bounds</strong> (<em>tuple</em>) – (min_lon, max_lon) longitude bounds</p></li>
+<li><p><strong>lat_bounds</strong> (<em>tuple</em>) – (min_lat, max_lat) latitude bounds</p></li>
+<li><p><strong>subsample</strong> (<em>int</em>) – Subsampling factor (e.g., 5 means every 5th point)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Bathymetry data with ‘lat’, ‘lon’, ‘depth’ keys</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.load_ship_track_netcdf">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">load_ship_track_netcdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">netcdf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subsample_minutes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#load_ship_track_netcdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.load_ship_track_netcdf" title="Link to this definition"></a></dt>
+<dd><p>Load ship track data from NetCDF file with optional temporal subsampling and filtering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>netcdf_path</strong> (<em>str</em>) – Path to NetCDF file containing ship position data</p></li>
+<li><p><strong>subsample_minutes</strong> (<em>int</em><em>, </em><em>optional</em>) – Temporal subsampling interval in minutes. Default is 1 minute.
+Set to 0 to disable subsampling (use all data).</p></li>
+<li><p><strong>time_start</strong> (<em>datetime-like</em><em>, </em><em>optional</em>) – Start time for filtering ship track data</p></li>
+<li><p><strong>time_end</strong> (<em>datetime-like</em><em>, </em><em>optional</em>) – End time for filtering ship track data</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Ship track data with ‘lat’, ‘lon’, and optionally ‘time’ keys</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.parse_survey_file">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">parse_survey_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#parse_survey_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.parse_survey_file" title="Link to this definition"></a></dt>
+<dd><p>Parse a survey data file and return survey parameters and data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – Path to the survey data file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>params</strong> (<em>dict</em>) – Survey parameters (release_height, transducer_depth, etc.)</p></li>
+<li><p><strong>survey_data</strong> (<em>list</em>) – List of survey data points [date_time, lat_deg, lat_min, lon_deg, lon_min, range]</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.plot_multiple_solutions">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_multiple_solutions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solutions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bathymetry_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ship_track_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(10,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_legend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#plot_multiple_solutions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.plot_multiple_solutions" title="Link to this definition"></a></dt>
+<dd><p>Plot multiple trilateration solutions on a single figure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solutions</strong> (<em>list</em><em> of </em><em>tuple</em>) – List of (loc_name, triang_data, solution) tuples</p></li>
+<li><p><strong>bathymetry_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to bathymetry NetCDF file</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Figure size (width, height)</p></li>
+<li><p><strong>colors</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Colors for each survey. If None, uses default colors</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – The figure object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.plot_multiple_surveys">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_multiple_surveys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">survey_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bathymetry_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ship_track_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(10,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_legend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Figure</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#plot_multiple_surveys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.plot_multiple_surveys" title="Link to this definition"></a></dt>
+<dd><p>Plot multiple trilateration surveys on a single figure (wrapper function).</p>
+<p>This function processes survey files and then calls plot_multiple_solutions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>survey_files</strong> (<em>list</em><em> of </em><em>str</em>) – List of paths to survey data files.</p></li>
+<li><p><strong>bathymetry_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to bathymetry NetCDF file.</p></li>
+<li><p><strong>ship_track_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to ship track NetCDF file.</p></li>
+<li><p><strong>sound_speed</strong> (<em>float</em><em>, </em><em>optional</em>) – Override sound speed for all surveys.</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Figure size (width, height).</p></li>
+<li><p><strong>colors</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Colors for each survey. If None, uses default colors.</p></li>
+<li><p><strong>no_title</strong> (<em>bool</em>) – Omit the figure title.</p></li>
+<li><p><strong>no_legend</strong> (<em>bool</em>) – Omit the figure legend.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>fig</strong> (<em>matplotlib.figure.Figure</em>) – The figure object.</p></li>
+<li><p><strong>survey_results</strong> (<em>list of tuple</em>) – List of (loc_name, triang_data, solution) for each survey.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.plot_survey_grid">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_survey_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solutions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bathymetry_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_legend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#plot_survey_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.plot_survey_grid" title="Link to this definition"></a></dt>
+<dd><p>Create a grid figure with an overview map on top and per-mooring subplots below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solutions</strong> (<em>list</em><em> of </em><em>tuple</em>) – List of (loc_name, triang_data, solution) tuples</p></li>
+<li><p><strong>bathymetry_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to bathymetry NetCDF file</p></li>
+<li><p><strong>figsize</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Figure size (width, height). Defaults to (20, 6 + 5 * n_subplot_rows).</p></li>
+<li><p><strong>colors</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – Colors for each survey. If None, uses default colors.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – The figure object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>matplotlib.figure.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.plot_trilateration_survey">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">plot_trilateration_survey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">triang_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ship_track</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bathymetry</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_figure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">(10,</span> <span class="pre">8)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_legend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Figure</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#plot_trilateration_survey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.plot_trilateration_survey" title="Link to this definition"></a></dt>
+<dd><p>Create trilateration survey plot showing ship positions, range circles, and solution.</p>
+<p>Based on the plotting functionality in MATLAB f_run_anchor.m.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triang_data</strong> (<em>dict</em>) – Trilateration survey data</p></li>
+<li><p><strong>solution</strong> (<em>dict</em>) – Anchor position solution</p></li>
+<li><p><strong>ship_track</strong> (<em>dict</em><em>, </em><em>optional</em>) – Ship track data with ‘lat’, ‘lon’ keys for plotting ship path</p></li>
+<li><p><strong>bathymetry</strong> (<em>dict</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Bathymetry data with ‘lat’, ‘lon’, ‘depth’ keys, or path to NetCDF file</p></li>
+<li><p><strong>save_figure</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename to save figure (e.g., ‘trilateration.png’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Matplotlib figure object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>plt.Figure</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.process_survey_file">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">process_survey_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#process_survey_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.process_survey_file" title="Link to this definition"></a></dt>
+<dd><p>Process a survey data file and solve trilateration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_path</strong> (<em>str</em>) – Path to the survey data file</p></li>
+<li><p><strong>sound_speed</strong> (<em>float</em><em>, </em><em>optional</em>) – Override sound speed from file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>triang_data</strong> (<em>dict</em>) – Processed triangulation data</p></li>
+<li><p><strong>solution</strong> (<em>dict</em>) – Trilateration solution</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.query_depth_at_position">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">query_depth_at_position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">netcdf_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="_modules/trilatmoor/plotting.html#query_depth_at_position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.query_depth_at_position" title="Link to this definition"></a></dt>
+<dd><p>Query bathymetric depth at a specific lat/lon from a NetCDF file.</p>
+<p>Uses xarray lazy loading and nearest-neighbour selection. Reads only the
+coordinate arrays and a single grid cell, so it is efficient even for
+large global files such as GEBCO.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>netcdf_path</strong> (<em>str</em>) – Path to NetCDF bathymetry file (e.g. GEBCO_2025.nc)</p></li>
+<li><p><strong>lat</strong> (<em>float</em>) – Latitude in decimal degrees</p></li>
+<li><p><strong>lon</strong> (<em>float</em>) – Longitude in decimal degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Water depth in metres (positive = below sea surface), or None if the
+lookup fails (bad path, land point, NaN, out-of-bounds, etc.)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.plotting.save_cropped_figure">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.plotting.</span></span><span class="sig-name descname"><span class="pre">save_cropped_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Figure</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/plotting.html#save_cropped_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.plotting.save_cropped_figure" title="Link to this definition"></a></dt>
+<dd><p>Save figure with cropped whitespace, mimicking MATLAB crop() function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fig</strong> (<em>plt.Figure</em>) – Figure to save</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Output filename</p></li>
+<li><p><strong>margin</strong> (<em>int</em>) – Margin in pixels around content</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-trilatmoor.utilities">
+<span id="utilities-utilities"></span><h2><a class="toc-backref" href="#id10" role="doc-backlink">Utilities — <code class="docutils literal notranslate"><span class="pre">utilities</span></code></a><a class="headerlink" href="#module-trilatmoor.utilities" title="Link to this heading"></a></h2>
+<p>Utilities for trilateration calculations including geodetic functions.</p>
+<p>Based on MATLAB m_map functions using Vincenty’s algorithms for high accuracy.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.dec2deg">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">dec2deg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decimal_degrees</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#dec2deg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.dec2deg" title="Link to this definition"></a></dt>
+<dd><p>Convert decimal degrees to degrees and decimal minutes.</p>
+<p>Based on MATLAB dec2deg.m function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>decimal_degrees</strong> (<em>float</em>) – Coordinate in decimal degrees</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>degrees</strong> (<em>int</em>) – Whole degrees</p></li>
+<li><p><strong>minutes</strong> (<em>float</em>) – Decimal minutes</p></li>
+<li><p><strong>deg_str</strong> (<em>str</em>) – Formatted string representation</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.deg2dec">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">deg2dec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minutes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#deg2dec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.deg2dec" title="Link to this definition"></a></dt>
+<dd><p>Convert degrees and minutes to decimal degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>degrees</strong> (<em>int</em>) – Whole degrees</p></li>
+<li><p><strong>minutes</strong> (<em>float</em>) – Decimal minutes</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>decimal_degrees</strong> – Coordinate in decimal degrees</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.horizontal_range">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">horizontal_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slant_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">water_depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">release_height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transducer_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#horizontal_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.horizontal_range" title="Link to this definition"></a></dt>
+<dd><p>Calculate horizontal range from slant range and water depth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>slant_range</strong> (<em>float</em><em> or </em><em>array</em>) – Slant range measurements in meters</p></li>
+<li><p><strong>water_depth</strong> (<em>float</em>) – Water depth at anchor position in meters</p></li>
+<li><p><strong>release_height</strong> (<em>float</em>) – Height of release above seafloor in meters (default 1m)</p></li>
+<li><p><strong>transducer_depth</strong> (<em>float</em>) – Depth of ship’s transducer below surface in meters (default 10m)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>horizontal_range</strong> – Horizontal range in meters</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.round_to_n">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">round_to_n</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#round_to_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.round_to_n" title="Link to this definition"></a></dt>
+<dd><p>Round value to nearest 1/n.</p>
+<p>Based on MATLAB r100.m function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>float</em>) – Value to round</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – Rounding factor (default 100 for rounding to hundredths)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>rounded_value</strong> – Rounded value</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.sound_speed_correction">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">sound_speed_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">measured_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">measured_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1507</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_speed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1503</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#sound_speed_correction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.sound_speed_correction" title="Link to this definition"></a></dt>
+<dd><p>Correct acoustic ranges for sound speed differences.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>measured_range</strong> (<em>float</em><em> or </em><em>array</em>) – Measured ranges in meters</p></li>
+<li><p><strong>measured_speed</strong> (<em>float</em>) – Sound speed used by transducer (m/s), default 1507 m/s</p></li>
+<li><p><strong>true_speed</strong> (<em>float</em>) – True sound speed (m/s), default 1503 m/s</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>corrected_range</strong> – Range corrected for true sound speed</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.vincenty_distance">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">vincenty_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lon1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#vincenty_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.vincenty_distance" title="Link to this definition"></a></dt>
+<dd><p>Calculate distance between two points using Vincenty’s inverse formula.</p>
+<p>Based on MATLAB m_idist.m - highly accurate ellipsoidal distance calculation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lon1</strong> (<em>float</em>) – First point coordinates in decimal degrees</p></li>
+<li><p><strong>lat1</strong> (<em>float</em>) – First point coordinates in decimal degrees</p></li>
+<li><p><strong>lon2</strong> (<em>float</em>) – Second point coordinates in decimal degrees</p></li>
+<li><p><strong>lat2</strong> (<em>float</em>) – Second point coordinates in decimal degrees</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>distance</strong> (<em>float</em>) – Distance in meters</p></li>
+<li><p><strong>azimuth_forward</strong> (<em>float</em>) – Forward azimuth in degrees (from point 1 to point 2)</p></li>
+<li><p><strong>azimuth_backward</strong> (<em>float</em>) – Backward azimuth in degrees (from point 2 to point 1)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.utilities.vincenty_forward">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.utilities.</span></span><span class="sig-name descname"><span class="pre">vincenty_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lon1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lat1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">azimuth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/utilities.html#vincenty_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.utilities.vincenty_forward" title="Link to this definition"></a></dt>
+<dd><p>Calculate endpoint given start point, azimuth, and distance using Vincenty’s direct formula.</p>
+<p>Based on MATLAB m_fdist.m for high accuracy forward calculations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lon1</strong> (<em>float</em>) – Starting point coordinates in decimal degrees</p></li>
+<li><p><strong>lat1</strong> (<em>float</em>) – Starting point coordinates in decimal degrees</p></li>
+<li><p><strong>azimuth</strong> (<em>float</em>) – Forward azimuth in degrees (clockwise from north)</p></li>
+<li><p><strong>distance</strong> (<em>float</em>) – Distance in meters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>lon2, lat2</strong> (<em>float</em>) – Endpoint coordinates in decimal degrees</p></li>
+<li><p><strong>azimuth_back</strong> (<em>float</em>) – Backward azimuth in degrees</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-trilatmoor.cli">
+<span id="cli-cli"></span><h2><a class="toc-backref" href="#id11" role="doc-backlink">CLI — <code class="docutils literal notranslate"><span class="pre">cli</span></code></a><a class="headerlink" href="#module-trilatmoor.cli" title="Link to this heading"></a></h2>
+<p>Command-line interface for trilatmoor package.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><p>trilatmoor -c survey.txt -o output_name
+trilatmoor –config survey.txt –output output_name
+trilatmoor –multi survey1.txt survey2.txt -o multi_plot</p>
+</dd>
+</dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.cli.main">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.cli.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/cli.html#main"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.cli.main" title="Link to this definition"></a></dt>
+<dd><p>Main CLI entry point.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.cli.process_multiple_surveys">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.cli.</span></span><span class="sig-name descname"><span class="pre">process_multiple_surveys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_files</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bathy_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ship_track_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interval_hr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_legend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/cli.html#process_multiple_surveys"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.cli.process_multiple_surveys" title="Link to this definition"></a></dt>
+<dd><p>Process multiple survey files and write overview plot and summary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_files</strong> (<em>list</em><em> of </em><em>str</em>) – Paths to triangulation survey files.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory for output files. Created if it does not exist.</p></li>
+<li><p><strong>output_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Base filename (no extension) for outputs. Defaults to <code class="docutils literal notranslate"><span class="pre">'multi_survey'</span></code>.</p></li>
+<li><p><strong>sound_speed</strong> (<em>float</em><em>, </em><em>optional</em>) – True sound speed in m/s to override file values for all surveys.</p></li>
+<li><p><strong>bathy_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Resolved bathymetry NetCDF file path (<code class="docutils literal notranslate"><span class="pre">--bathy-dir</span></code> + <code class="docutils literal notranslate"><span class="pre">--bathy-source</span></code>).</p></li>
+<li><p><strong>ship_track_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to a ship track NetCDF file (<code class="docutils literal notranslate"><span class="pre">--ship-track</span></code>).</p></li>
+<li><p><strong>time_interval_hr</strong> (<em>list</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – [start, end] hours relative to survey time for ship track filtering.</p></li>
+<li><p><strong>format</strong> (<em>str</em>) – Output format: <code class="docutils literal notranslate"><span class="pre">'all'</span></code> (png + grid + txt), <code class="docutils literal notranslate"><span class="pre">'png'</span></code> (overview only),
+<code class="docutils literal notranslate"><span class="pre">'grid'</span></code> (per-mooring grid only), or <code class="docutils literal notranslate"><span class="pre">'txt'</span></code> (summary file only).</p></li>
+<li><p><strong>figsize</strong> (<em>list</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Figure size as [width, height] in inches.</p></li>
+<li><p><strong>no_title</strong> (<em>bool</em>) – Omit figure titles.</p></li>
+<li><p><strong>no_legend</strong> (<em>bool</em>) – Omit figure legends.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.cli.process_single_survey">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.cli.</span></span><span class="sig-name descname"><span class="pre">process_single_survey</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sound_speed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bathy_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ship_track_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_interval_hr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_title</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_legend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/cli.html#process_single_survey"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.cli.process_single_survey" title="Link to this definition"></a></dt>
+<dd><p>Process a single survey file and write a plot and anchor position file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – Path to the triangulation survey file.</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory for output files. Created if it does not exist.</p></li>
+<li><p><strong>output_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Base filename (no extension) for outputs. Defaults to the location
+name read from the survey file header.</p></li>
+<li><p><strong>sound_speed</strong> (<em>float</em><em>, </em><em>optional</em>) – True sound speed in m/s to override the file value.</p></li>
+<li><p><strong>bathy_dir</strong> (<em>str</em><em>, </em><em>optional</em>) – Resolved bathymetry NetCDF file path (<code class="docutils literal notranslate"><span class="pre">--bathy-dir</span></code> + <code class="docutils literal notranslate"><span class="pre">--bathy-source</span></code>).</p></li>
+<li><p><strong>ship_track_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to a ship track NetCDF file (<code class="docutils literal notranslate"><span class="pre">--ship-track</span></code>).</p></li>
+<li><p><strong>time_interval_hr</strong> (<em>list</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – [start, end] hours relative to survey time for ship track filtering.</p></li>
+<li><p><strong>format</strong> (<em>str</em>) – Output format: <code class="docutils literal notranslate"><span class="pre">'all'</span></code> (png + txt), <code class="docutils literal notranslate"><span class="pre">'png'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'txt'</span></code>.
+<code class="docutils literal notranslate"><span class="pre">'grid'</span></code> is not supported for single surveys and falls back to <code class="docutils literal notranslate"><span class="pre">'all'</span></code>.</p></li>
+<li><p><strong>figsize</strong> (<em>list</em><em> of </em><em>float</em><em>, </em><em>optional</em>) – Figure size as [width, height] in inches.</p></li>
+<li><p><strong>no_title</strong> (<em>bool</em>) – Omit the figure title.</p></li>
+<li><p><strong>no_legend</strong> (<em>bool</em>) – Omit the figure legend.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="trilatmoor.cli.write_anchor_position_file">
+<span class="sig-prename descclassname"><span class="pre">trilatmoor.cli.</span></span><span class="sig-name descname"><span class="pre">write_anchor_position_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triang_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gebco_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/trilatmoor/cli.html#write_anchor_position_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#trilatmoor.cli.write_anchor_position_file" title="Link to this definition"></a></dt>
+<dd><p>Write anchor position results to a text file.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="demo_G1-output.html" class="btn btn-neutral float-left" title="Demo notebook snippet for manual trilateration input." accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

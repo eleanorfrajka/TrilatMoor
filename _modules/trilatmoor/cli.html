@@ -1,0 +1,734 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>trilatmoor.cli &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            trilatmoor
+              <img src="../../_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">trilatmoor.cli</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for trilatmoor.cli</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;Command-line interface for trilatmoor package.</span>
+
+<span class="sd">Usage:</span>
+<span class="sd">    trilatmoor -c survey.txt -o output_name</span>
+<span class="sd">    trilatmoor --config survey.txt --output output_name</span>
+<span class="sd">    trilatmoor --multi survey1.txt survey2.txt -o multi_plot</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">timedelta</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span>
+
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s2">&quot;Agg&quot;</span><span class="p">)</span>  <span class="c1"># Use non-interactive backend for CLI</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">process_survey_file</span><span class="p">,</span>
+    <span class="n">plot_trilateration_survey</span><span class="p">,</span>
+    <span class="n">plot_multiple_surveys</span><span class="p">,</span>
+    <span class="n">plot_survey_grid</span><span class="p">,</span>
+    <span class="n">dec2deg</span><span class="p">,</span>
+    <span class="n">load_ship_track_netcdf</span><span class="p">,</span>
+    <span class="n">query_depth_at_position</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.plotting</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_survey_time_range</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_hemisphere</span><span class="p">(</span><span class="n">lon</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lat</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return (lon_hemi, lat_hemi) strings for a coordinate pair.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;E&quot;</span> <span class="k">if</span> <span class="n">lon</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;W&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span> <span class="k">if</span> <span class="n">lat</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;S&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="write_anchor_position_file">
+<a class="viewcode-back" href="../../api.html#trilatmoor.cli.write_anchor_position_file">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">write_anchor_position_file</span><span class="p">(</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">loc_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">triang_data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">solution</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span>
+    <span class="n">gebco_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write anchor position results to a text file.&quot;&quot;&quot;</span>
+    <span class="n">lat</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">]</span>
+    <span class="n">lon</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">]</span>
+
+    <span class="c1"># Convert to degrees/minutes</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lat_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lon_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+    <span class="n">lon_hemi</span><span class="p">,</span> <span class="n">lat_hemi</span> <span class="o">=</span> <span class="n">_hemisphere</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Trilatmoor Anchor Position Results</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;=====================================</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Location: </span><span class="si">{</span><span class="n">loc_name</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Final Anchor Position:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;  Decimal degrees: </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">°</span><span class="si">{</span><span class="n">lat_hemi</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">°</span><span class="si">{</span><span class="n">lon_hemi</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Degrees/minutes: </span><span class="si">{</span><span class="n">lat_str</span><span class="si">}{</span><span class="n">lat_hemi</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_str</span><span class="si">}{</span><span class="n">lon_hemi</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Survey Quality:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Fallback distance: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;fallback_distance&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Max residual error: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;max_residual&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  RMS residual error: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;rms_residual&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Quality assessment</span>
+        <span class="n">rms</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;rms_residual&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;Excellent&quot;</span>
+        <span class="k">elif</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+            <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;Good&quot;</span>
+        <span class="k">elif</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;Fair&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">quality</span> <span class="o">=</span> <span class="s2">&quot;Poor&quot;</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Overall quality: </span><span class="si">{</span><span class="n">quality</span><span class="si">}</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Individual Fix Residuals:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">residual</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">solution</span><span class="p">[</span><span class="s2">&quot;residuals&quot;</span><span class="p">]):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Fix </span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">residual</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Survey Parameters:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;  Water depth at launch: </span><span class="si">{</span><span class="n">triang_data</span><span class="p">[</span><span class="s1">&#39;water_depth_anchor_launch&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">gebco_depth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  GEBCO depth at anchor: </span><span class="si">{</span><span class="n">gebco_depth</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Release height: </span><span class="si">{</span><span class="n">triang_data</span><span class="p">[</span><span class="s1">&#39;release_height&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Transducer depth: </span><span class="si">{</span><span class="n">triang_data</span><span class="p">[</span><span class="s1">&#39;transducer_depth&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> m</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="n">_BATHY_PATTERNS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;gebco2025&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GEBCO_2025.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;gebco_2025.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;GEBCO2025.nc&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;gebco2023&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GEBCO_2023.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;gebco_2023.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;GEBCO2023.nc&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;gebco&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;GEBCO*.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;gebco*.nc&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;etopo&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;ETOPO*.nc&quot;</span><span class="p">,</span> <span class="s2">&quot;etopo*.nc&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;auto&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;*.nc&quot;</span><span class="p">],</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_bathy</span><span class="p">(</span><span class="n">bathy_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">bathy_source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a bathymetry NetCDF file from a directory and source name.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bathy_dir : str</span>
+<span class="sd">        Directory containing bathymetry NetCDF files.</span>
+<span class="sd">    bathy_source : str</span>
+<span class="sd">        Named source (e.g. ``&#39;gebco2025&#39;``) used to select the filename pattern.</span>
+<span class="sd">        Use ``&#39;auto&#39;`` to return the first ``*.nc`` file found.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">glob</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">bathy_dir</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Bathymetry directory not found: </span><span class="si">{</span><span class="n">bathy_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">patterns</span> <span class="o">=</span> <span class="n">_BATHY_PATTERNS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">bathy_source</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;*</span><span class="si">{</span><span class="n">bathy_source</span><span class="si">}</span><span class="s2">*.nc&quot;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bathy_dir</span><span class="p">,</span> <span class="n">pattern</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found bathymetry file: </span><span class="si">{</span><span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: No bathymetry file matching &#39;</span><span class="si">{</span><span class="n">bathy_source</span><span class="si">}</span><span class="s2">&#39; in </span><span class="si">{</span><span class="n">bathy_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">available</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bathy_dir</span><span class="p">,</span> <span class="s2">&quot;*.nc&quot;</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">available</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Available: </span><span class="si">{</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">f</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">available</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="process_single_survey">
+<a class="viewcode-back" href="../../api.html#trilatmoor.cli.process_single_survey">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_single_survey</span><span class="p">(</span>
+    <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sound_speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bathy_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ship_track_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_interval_hr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">no_title</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">no_legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process a single survey file and write a plot and anchor position file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_file : str</span>
+<span class="sd">        Path to the triangulation survey file.</span>
+<span class="sd">    output_dir : str</span>
+<span class="sd">        Directory for output files. Created if it does not exist.</span>
+<span class="sd">    output_name : str, optional</span>
+<span class="sd">        Base filename (no extension) for outputs. Defaults to the location</span>
+<span class="sd">        name read from the survey file header.</span>
+<span class="sd">    sound_speed : float, optional</span>
+<span class="sd">        True sound speed in m/s to override the file value.</span>
+<span class="sd">    bathy_dir : str, optional</span>
+<span class="sd">        Resolved bathymetry NetCDF file path (``--bathy-dir`` + ``--bathy-source``).</span>
+<span class="sd">    ship_track_path : str, optional</span>
+<span class="sd">        Path to a ship track NetCDF file (``--ship-track``).</span>
+<span class="sd">    time_interval_hr : list of float, optional</span>
+<span class="sd">        [start, end] hours relative to survey time for ship track filtering.</span>
+<span class="sd">    format : str</span>
+<span class="sd">        Output format: ``&#39;all&#39;`` (png + txt), ``&#39;png&#39;``, or ``&#39;txt&#39;``.</span>
+<span class="sd">        ``&#39;grid&#39;`` is not supported for single surveys and falls back to ``&#39;all&#39;``.</span>
+<span class="sd">    figsize : list of float, optional</span>
+<span class="sd">        Figure size as [width, height] in inches.</span>
+<span class="sd">    no_title : bool</span>
+<span class="sd">        Omit the figure title.</span>
+<span class="sd">    no_legend : bool</span>
+<span class="sd">        Omit the figure legend.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">format</span> <span class="o">==</span> <span class="s2">&quot;grid&quot;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;Note: &#39;grid&#39; format does not apply to single-survey mode; writing png and txt.&quot;</span>
+            <span class="p">)</span>
+            <span class="nb">format</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span>
+        <span class="n">save_png</span> <span class="o">=</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">)</span>
+        <span class="n">save_txt</span> <span class="o">=</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+        <span class="n">triang_data</span><span class="p">,</span> <span class="n">solution</span> <span class="o">=</span> <span class="n">process_survey_file</span><span class="p">(</span><span class="n">input_file</span><span class="p">,</span> <span class="n">sound_speed</span><span class="p">)</span>
+
+        <span class="c1"># Look up GEBCO depth at the trilaterated anchor position</span>
+        <span class="n">gebco_depth</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">bathy_dir</span><span class="p">:</span>
+            <span class="n">gebco_depth</span> <span class="o">=</span> <span class="n">query_depth_at_position</span><span class="p">(</span>
+                <span class="n">bathy_dir</span><span class="p">,</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">],</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">gebco_depth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GEBCO depth at anchor position: </span><span class="si">{</span><span class="n">gebco_depth</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">)</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="n">output_name</span> <span class="k">if</span> <span class="n">output_name</span> <span class="k">else</span> <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;loc_name&quot;</span><span class="p">]</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plot_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+        <span class="n">pos_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_anchorposition.txt&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bathy_dir</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Including bathymetry from: </span><span class="si">{</span><span class="n">bathy_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Load ship track if provided</span>
+        <span class="n">ship_track</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">ship_track_path</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading ship track from: </span><span class="si">{</span><span class="n">ship_track_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">time_start</span><span class="p">,</span> <span class="n">time_end</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">time_interval_hr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">survey_start</span><span class="p">,</span> <span class="n">survey_end</span> <span class="o">=</span> <span class="n">extract_survey_time_range</span><span class="p">(</span><span class="n">triang_data</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">survey_start</span> <span class="ow">and</span> <span class="n">survey_end</span><span class="p">:</span>
+                        <span class="n">time_start</span> <span class="o">=</span> <span class="n">survey_start</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">time_interval_hr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">time_end</span> <span class="o">=</span> <span class="n">survey_end</span> <span class="o">+</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">time_interval_hr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Time filtering: </span><span class="si">{</span><span class="n">time_start</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">time_end</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">time_interval_hr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">+.0f</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">time_interval_hr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">+.0f</span><span class="si">}</span><span class="s2"> hours)&quot;</span>
+                        <span class="p">)</span>
+                <span class="n">ship_track</span> <span class="o">=</span> <span class="n">load_ship_track_netcdf</span><span class="p">(</span>
+                    <span class="n">ship_track_path</span><span class="p">,</span>
+                    <span class="n">subsample_minutes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                    <span class="n">time_start</span><span class="o">=</span><span class="n">time_start</span><span class="p">,</span>
+                    <span class="n">time_end</span><span class="o">=</span><span class="n">time_end</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ship track loaded: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ship_track</span><span class="p">[</span><span class="s1">&#39;lat&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2"> points&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Failed to load ship track: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_png</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating plot: </span><span class="si">{</span><span class="n">plot_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fig</span> <span class="o">=</span> <span class="n">plot_trilateration_survey</span><span class="p">(</span>
+                <span class="n">triang_data</span><span class="p">,</span>
+                <span class="n">solution</span><span class="p">,</span>
+                <span class="n">ship_track</span><span class="o">=</span><span class="n">ship_track</span><span class="p">,</span>
+                <span class="n">bathymetry</span><span class="o">=</span><span class="n">bathy_dir</span><span class="p">,</span>
+                <span class="n">save_figure</span><span class="o">=</span><span class="n">plot_file</span><span class="p">,</span>
+                <span class="n">figsize</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">figsize</span><span class="p">)</span> <span class="k">if</span> <span class="n">figsize</span> <span class="k">else</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span>
+                <span class="n">no_title</span><span class="o">=</span><span class="n">no_title</span><span class="p">,</span>
+                <span class="n">no_legend</span><span class="o">=</span><span class="n">no_legend</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">save_txt</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing position data: </span><span class="si">{</span><span class="n">pos_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">write_anchor_position_file</span><span class="p">(</span>
+                <span class="n">pos_file</span><span class="p">,</span>
+                <span class="n">triang_data</span><span class="p">[</span><span class="s2">&quot;loc_name&quot;</span><span class="p">],</span>
+                <span class="n">triang_data</span><span class="p">,</span>
+                <span class="n">solution</span><span class="p">,</span>
+                <span class="n">gebco_depth</span><span class="o">=</span><span class="n">gebco_depth</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">]</span>
+        <span class="n">lon</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">]</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lat_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lon_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+        <span class="n">lon_hemi</span><span class="p">,</span> <span class="n">lat_hemi</span> <span class="o">=</span> <span class="n">_hemisphere</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Results for </span><span class="si">{</span><span class="n">triang_data</span><span class="p">[</span><span class="s1">&#39;loc_name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;  Position: </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">°</span><span class="si">{</span><span class="n">lat_hemi</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">°</span><span class="si">{</span><span class="n">lon_hemi</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">lat_str</span><span class="si">}{</span><span class="n">lat_hemi</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_str</span><span class="si">}{</span><span class="n">lon_hemi</span><span class="si">}</span><span class="s2">)&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">gebco_depth</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  GEBCO depth at anchor: </span><span class="si">{</span><span class="n">gebco_depth</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Fallback: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;fallback_distance&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  RMS residual: </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;rms_residual&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">m&quot;</span><span class="p">)</span>
+        <span class="n">generated</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">f</span> <span class="k">for</span> <span class="n">f</span><span class="p">,</span> <span class="n">flag</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">plot_file</span><span class="p">,</span> <span class="n">save_png</span><span class="p">),</span> <span class="p">(</span><span class="n">pos_file</span><span class="p">,</span> <span class="n">save_txt</span><span class="p">)]</span> <span class="k">if</span> <span class="n">flag</span>
+        <span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Files generated: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generated</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing </span><span class="si">{</span><span class="n">input_file</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_quality_label</span><span class="p">(</span><span class="n">rms</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Excellent&quot;</span>
+    <span class="k">elif</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="mi">50</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Good&quot;</span>
+    <span class="k">elif</span> <span class="n">rms</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;Fair&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;Poor&quot;</span>
+
+
+<div class="viewcode-block" id="process_multiple_surveys">
+<a class="viewcode-back" href="../../api.html#trilatmoor.cli.process_multiple_surveys">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">process_multiple_surveys</span><span class="p">(</span>
+    <span class="n">input_files</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+    <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span>
+    <span class="n">output_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sound_speed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">bathy_dir</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ship_track_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">time_interval_hr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="nb">format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;all&quot;</span><span class="p">,</span>
+    <span class="n">figsize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">no_title</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">no_legend</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process multiple survey files and write overview plot and summary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_files : list of str</span>
+<span class="sd">        Paths to triangulation survey files.</span>
+<span class="sd">    output_dir : str</span>
+<span class="sd">        Directory for output files. Created if it does not exist.</span>
+<span class="sd">    output_name : str, optional</span>
+<span class="sd">        Base filename (no extension) for outputs. Defaults to ``&#39;multi_survey&#39;``.</span>
+<span class="sd">    sound_speed : float, optional</span>
+<span class="sd">        True sound speed in m/s to override file values for all surveys.</span>
+<span class="sd">    bathy_dir : str, optional</span>
+<span class="sd">        Resolved bathymetry NetCDF file path (``--bathy-dir`` + ``--bathy-source``).</span>
+<span class="sd">    ship_track_path : str, optional</span>
+<span class="sd">        Path to a ship track NetCDF file (``--ship-track``).</span>
+<span class="sd">    time_interval_hr : list of float, optional</span>
+<span class="sd">        [start, end] hours relative to survey time for ship track filtering.</span>
+<span class="sd">    format : str</span>
+<span class="sd">        Output format: ``&#39;all&#39;`` (png + grid + txt), ``&#39;png&#39;`` (overview only),</span>
+<span class="sd">        ``&#39;grid&#39;`` (per-mooring grid only), or ``&#39;txt&#39;`` (summary file only).</span>
+<span class="sd">    figsize : list of float, optional</span>
+<span class="sd">        Figure size as [width, height] in inches.</span>
+<span class="sd">    no_title : bool</span>
+<span class="sd">        Omit figure titles.</span>
+<span class="sd">    no_legend : bool</span>
+<span class="sd">        Omit figure legends.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">input_files</span><span class="p">)</span><span class="si">}</span><span class="s2"> survey files...&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">bathy_dir</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Including bathymetry from: </span><span class="si">{</span><span class="n">bathy_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ship_track_path</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Including ship track from: </span><span class="si">{</span><span class="n">ship_track_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">save_png</span> <span class="o">=</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">)</span>
+        <span class="n">save_grid</span> <span class="o">=</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;grid&quot;</span><span class="p">)</span>
+        <span class="n">save_txt</span> <span class="o">=</span> <span class="nb">format</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">)</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="n">output_name</span> <span class="k">if</span> <span class="n">output_name</span> <span class="k">else</span> <span class="s2">&quot;multi_survey&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Overview plot (always computed to get survey_results; selectively saved)</span>
+        <span class="n">plot_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">.png&quot;</span><span class="p">)</span>
+        <span class="n">overview_figsize</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">figsize</span><span class="p">)</span> <span class="k">if</span> <span class="n">figsize</span> <span class="k">else</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">survey_results</span> <span class="o">=</span> <span class="n">plot_multiple_surveys</span><span class="p">(</span>
+            <span class="n">input_files</span><span class="p">,</span>
+            <span class="n">bathymetry_path</span><span class="o">=</span><span class="n">bathy_dir</span><span class="p">,</span>
+            <span class="n">ship_track_path</span><span class="o">=</span><span class="n">ship_track_path</span><span class="p">,</span>
+            <span class="n">sound_speed</span><span class="o">=</span><span class="n">sound_speed</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">overview_figsize</span><span class="p">,</span>
+            <span class="n">no_title</span><span class="o">=</span><span class="n">no_title</span><span class="p">,</span>
+            <span class="n">no_legend</span><span class="o">=</span><span class="n">no_legend</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">generated_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">save_png</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating multi-survey plot: </span><span class="si">{</span><span class="n">plot_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">plot_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+            <span class="n">generated_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">plot_file</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig</span><span class="p">)</span>
+
+        <span class="c1"># Grid figure (overview + per-mooring subplots)</span>
+        <span class="k">if</span> <span class="n">save_grid</span><span class="p">:</span>
+            <span class="n">grid_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_grid.png&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating grid figure: </span><span class="si">{</span><span class="n">grid_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">fig_grid</span> <span class="o">=</span> <span class="n">plot_survey_grid</span><span class="p">(</span>
+                <span class="n">survey_results</span><span class="p">,</span>
+                <span class="n">bathymetry_path</span><span class="o">=</span><span class="n">bathy_dir</span><span class="p">,</span>
+                <span class="n">figsize</span><span class="o">=</span><span class="nb">tuple</span><span class="p">(</span><span class="n">figsize</span><span class="p">)</span> <span class="k">if</span> <span class="n">figsize</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">no_title</span><span class="o">=</span><span class="n">no_title</span><span class="p">,</span>
+                <span class="n">no_legend</span><span class="o">=</span><span class="n">no_legend</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">fig_grid</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">grid_file</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s2">&quot;tight&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fig_grid</span><span class="p">)</span>
+            <span class="n">generated_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid_file</span><span class="p">)</span>
+
+        <span class="c1"># Summary file</span>
+        <span class="n">summary_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base</span><span class="si">}</span><span class="s2">_summary.txt&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">save_txt</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing summary: </span><span class="si">{</span><span class="n">summary_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">summary_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Trilatmoor Multi-Survey Results</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;===============================</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">survey_results</span><span class="p">)</span><span class="si">}</span><span class="s2"> surveys:</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;Location&#39;</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Position&#39;</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Fallback&#39;</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;RMS&#39;</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Quality&#39;</span><span class="si">:</span><span class="s2">&lt;9</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;-&#39;</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">70</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">loc_name</span><span class="p">,</span> <span class="n">triang_data</span><span class="p">,</span> <span class="n">solution</span> <span class="ow">in</span> <span class="n">survey_results</span><span class="p">:</span>
+                    <span class="n">lat</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">]</span>
+                    <span class="n">lon</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">]</span>
+                    <span class="n">fallback</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;fallback_distance&quot;</span><span class="p">]</span>
+                    <span class="n">rms</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;rms_residual&quot;</span><span class="p">]</span>
+                    <span class="n">lon_hemi</span><span class="p">,</span> <span class="n">lat_hemi</span> <span class="o">=</span> <span class="n">_hemisphere</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lat_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lon_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+                    <span class="n">pos_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lat_str</span><span class="si">}{</span><span class="n">lat_hemi</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_str</span><span class="si">}{</span><span class="n">lon_hemi</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loc_name</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pos_str</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">fallback</span><span class="si">:</span><span class="s2">&gt;9.0f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">rms</span><span class="si">:</span><span class="s2">&gt;7.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">_quality_label</span><span class="p">(</span><span class="n">rms</span><span class="p">)</span><span class="si">:</span><span class="s2">&lt;9</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+            <span class="n">generated_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">summary_file</span><span class="p">)</span>
+
+        <span class="c1"># Console summary table</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;Location&#39;</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Position&#39;</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Fallback&#39;</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;RMS&#39;</span><span class="si">:</span><span class="s2">&gt;7</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;Quality&#39;</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">65</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">loc_name</span><span class="p">,</span> <span class="n">triang_data</span><span class="p">,</span> <span class="n">solution</span> <span class="ow">in</span> <span class="n">survey_results</span><span class="p">:</span>
+            <span class="n">lat</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lat&quot;</span><span class="p">]</span>
+            <span class="n">lon</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[</span><span class="s2">&quot;anchor_lon&quot;</span><span class="p">]</span>
+            <span class="n">lon_hemi</span><span class="p">,</span> <span class="n">lat_hemi</span> <span class="o">=</span> <span class="n">_hemisphere</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lat_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lat</span><span class="p">))</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">lon_str</span> <span class="o">=</span> <span class="n">dec2deg</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">lon</span><span class="p">))</span>
+            <span class="n">pos_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">lat_str</span><span class="si">}{</span><span class="n">lat_hemi</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lon_str</span><span class="si">}{</span><span class="n">lon_hemi</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">loc_name</span><span class="si">:</span><span class="s2">&lt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pos_str</span><span class="si">:</span><span class="s2">&lt;30</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;fallback_distance&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;9.0f</span><span class="si">}</span><span class="s2"> &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;rms_residual&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;7.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">_quality_label</span><span class="p">(</span><span class="n">solution</span><span class="p">[</span><span class="s1">&#39;rms_residual&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Files generated: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">generated_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing multiple surveys: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../api.html#trilatmoor.cli.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Main CLI entry point.&quot;&quot;&quot;</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Process acoustic trilateration survey data&quot;</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+        <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">Examples:</span>
+<span class="s2">  trilatmoor -c survey.txt</span>
+<span class="s2">  trilatmoor -c survey.txt -o results/ --output FC1</span>
+<span class="s2">  trilatmoor --multi survey1.txt survey2.txt -o results/ --output campaign --format grid</span>
+<span class="s2">  trilatmoor -c survey.txt --sound-speed 1480</span>
+<span class="s2">  trilatmoor -c survey.txt --bathy-dir data/bathymetry --bathy-source gebco2025</span>
+<span class="s2">        &quot;&quot;&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;--config&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Survey file to process (single-survey mode)&quot;</span>
+    <span class="p">)</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--multi&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;FILE&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Two or more survey files to process together (multi-survey mode)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output-directory&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DIR&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Directory for output files (default: current directory)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--output&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;NAME&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Base filename for outputs, without extension &quot;</span>
+        <span class="s2">&quot;(default: location name for single survey, &#39;multi_survey&#39; for --multi)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--sound-speed&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Override sound speed in m/s (default: use file value or 1500)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--bathy-dir&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;DIR&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Directory containing bathymetry NetCDF files&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--bathy-source&quot;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;gebco2025&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">_BATHY_PATTERNS</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Bathymetry dataset name used to select the file (default: gebco2025)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--ship-track&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Ship track NetCDF file to overlay on plots&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--time-interval-hr&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;START_HR&quot;</span><span class="p">,</span> <span class="s2">&quot;END_HR&quot;</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Time interval around survey (hours before/after). Default: -12 12&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--format&quot;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;png&quot;</span><span class="p">,</span> <span class="s2">&quot;grid&quot;</span><span class="p">,</span> <span class="s2">&quot;txt&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;Output format: &#39;all&#39; (default), &#39;png&#39; (overview plot only), &quot;</span>
+            <span class="s2">&quot;&#39;grid&#39; (per-mooring grid, --multi only), &#39;txt&#39; (summary file only)&quot;</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--figsize&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;WIDTH&quot;</span><span class="p">,</span> <span class="s2">&quot;HEIGHT&quot;</span><span class="p">),</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Figure size in inches, e.g. --figsize 12 8&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no-title&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Omit figure title(s)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--no-legend&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Omit figure legend(s)&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="c1"># Validate input files exist</span>
+    <span class="n">input_files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+        <span class="n">input_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">multi</span><span class="p">:</span>
+        <span class="n">input_files</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">multi</span>
+
+    <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Input file not found: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Resolve bathymetry file (None if no directory specified or directory not found)</span>
+    <span class="n">resolved_bathy</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">_resolve_bathy</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">bathy_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">bathy_source</span><span class="p">)</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bathy_dir</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Process based on mode</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="n">process_single_survey</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">output_directory</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">sound_speed</span><span class="p">,</span>
+            <span class="n">resolved_bathy</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">ship_track</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">time_interval_hr</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">figsize</span><span class="p">,</span>
+            <span class="n">no_title</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">no_title</span><span class="p">,</span>
+            <span class="n">no_legend</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">no_legend</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">multi</span><span class="p">:</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="n">process_multiple_surveys</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">multi</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">output_directory</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">sound_speed</span><span class="p">,</span>
+            <span class="n">resolved_bathy</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">ship_track</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">time_interval_hr</span><span class="p">,</span>
+            <span class="nb">format</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">format</span><span class="p">,</span>
+            <span class="n">figsize</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">figsize</span><span class="p">,</span>
+            <span class="n">no_title</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">no_title</span><span class="p">,</span>
+            <span class="n">no_legend</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">no_legend</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing completed successfully!&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Processing failed!&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

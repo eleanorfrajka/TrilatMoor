@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo notebook snippet for manual trilateration input. &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API reference" href="api.html" />
+    <link rel="prev" title="Bathymetry" href="bathymetry.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            trilatmoor
+              <img src="_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bathymetry.html">Bathymetry</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Demo notebook snippet for manual trilateration input.</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/demo_G1-output.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Demo-notebook-snippet-for-manual-trilateration-input.">
+<h1>Demo notebook snippet for manual trilateration input.<a class="headerlink" href="#Demo-notebook-snippet-for-manual-trilateration-input." title="Link to this heading"></a></h1>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Import the trilateration package
+from trilatmoor import solve_anchor_position, dec2deg
+from datetime import datetime
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Survey positions and ranges
+# Format: [latitude_degrees, latitude_minutes, longitude_degrees, longitude_minutes, range_meters]
+<br/></pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span># Survey parameters
+release_height = 7  # Height of acoustic release above seafloor (m)
+transducer_depth = 7.7  # Depth of ship&#39;s transducer below surface (m)
+# Location name
+
+# Survey positions and ranges
+# Format: [latitude_degrees, latitude_minutes, longitude_degrees,
+
+# Sound speed (m/s) - adjust for your area
+true_sound_speed = 1490  # Use 1495 for FC3, 1503 for most other sites
+
+water_depth_anchor_launch = 690  # Water depth at anchor deployment (m)
+loc_name = &quot;dsG1&quot;
+survey_data = [
+    # Anchor deployment (range = 0)
+    [65, 35.42, -29, -27.47, 0],
+    # Position fixes with acoustic ranges
+    [65, 35.2656, -29, -27.0447, 936],  # Fix 1
+    [65, 35.6567, -29, -27.5268, 900],  # Fix 2
+    [65, 35.3346, -29, -28.0173, 755],  # Fix 3
+    [65, 35.2882, -29, -28.2560, 850],  # Fix 4
+]
+# =============================================================================
+# PROCESSING SECTION - No need to edit below this line
+# =============================================================================
+
+
+def convert_to_decimal_degrees(deg, min_val):
+    &quot;&quot;&quot;Convert degrees and decimal minutes to decimal degrees.&quot;&quot;&quot;
+    return deg + min_val / 60
+
+
+def convert_from_decimal_degrees(decimal_degrees):
+    &quot;&quot;&quot;Convert decimal degrees back to degrees and decimal minutes.&quot;&quot;&quot;
+    abs_val = abs(decimal_degrees)
+    degrees = int(abs_val)
+    minutes = (abs_val - degrees) * 60
+    return degrees, minutes
+
+
+# Convert survey data to the format expected by solve_anchor_position
+latitudes = []
+longitudes = []
+ranges = []
+
+print(f&quot;Processing survey data for {loc_name}:&quot;)
+# print(&quot;-&quot; * 50)
+
+for i, (lat_deg, lat_min, lon_deg, lon_min, range_val) in enumerate(survey_data):
+    # Convert to decimal degrees
+    lat_decimal = convert_to_decimal_degrees(lat_deg, lat_min)
+    lon_decimal = convert_to_decimal_degrees(lon_deg, lon_min)
+
+    latitudes.append(lat_decimal)
+    longitudes.append(lon_decimal)
+    ranges.append(range_val)
+
+    if range_val == 0:
+        print(
+            f&quot;Deployment: {lat_decimal:.5f}°N, {lon_decimal:.5f}°W ({lat_deg}°{lat_min:.2f}&#39;N, {abs(lon_deg)}°{abs(lon_min):.2f}&#39;W)&quot;
+        )
+    else:
+        print(
+            f&quot;Fix {i}: {lat_decimal:.5f}°N, {lon_decimal:.5f}°W ({lat_deg}°{lat_min:.2f}&#39;N, {abs(lon_deg)}°{abs(lon_min):.2f}&#39;W) - Range: {range_val}m&quot;
+        )
+
+# Create triangulation data structure
+triang_data = {
+    &quot;loc_name&quot;: loc_name,
+    &quot;release_height&quot;: release_height,
+    &quot;transducer_depth&quot;: transducer_depth,
+    &quot;water_depth_anchor_launch&quot;: water_depth_anchor_launch,
+    &quot;times&quot;: [datetime.now()] * len(ranges),  # Dummy times
+    &quot;ranges&quot;: ranges,
+    &quot;latitudes&quot;: latitudes,
+    &quot;longitudes&quot;: longitudes,
+}
+
+print(&quot;\nSurvey parameters:&quot;)
+print(f&quot;  Water depth: {water_depth_anchor_launch}m&quot;)
+print(f&quot;  Release height: {release_height}m&quot;)
+print(f&quot;  Transducer depth: {transducer_depth}m&quot;)
+print(f&quot;  Sound speed: {true_sound_speed}m/s&quot;)
+
+# Solve for anchor position
+print(&quot;\nSolving trilateration...&quot;)
+solution = solve_anchor_position(triang_data, true_sound_speed=true_sound_speed)
+
+# Display results
+print(&quot;\n&quot; + &quot;=&quot; * 60)
+print(f&quot;ANCHOR POSITION RESULTS FOR {loc_name}&quot;)
+print(&quot;=&quot; * 60)
+
+anchor_lat = solution[&quot;anchor_lat&quot;]
+anchor_lon = solution[&quot;anchor_lon&quot;]
+
+print(f&quot;Decimal degrees: {anchor_lat:.6f}°N, {anchor_lon:.6f}°W&quot;)
+
+# Convert to degrees/minutes format
+_, _, lat_str = dec2deg(anchor_lat)
+_, _, lon_str = dec2deg(abs(anchor_lon))
+print(f&quot;Degrees/minutes: {lat_str}N, {lon_str}W&quot;)
+
+print(&quot;\nQuality metrics:&quot;)
+print(f&quot;  Fallback distance: {solution[&#39;fallback_distance&#39;]:.0f} m&quot;)
+print(f&quot;  Max residual error: {solution[&#39;max_residual&#39;]:.1f} m&quot;)
+print(f&quot;  RMS residual error: {solution[&#39;rms_residual&#39;]:.1f} m&quot;)
+
+print(&quot;\nIndividual fix residuals:&quot;)
+for i, residual in enumerate(solution[&quot;residuals&quot;]):
+    print(f&quot;  Fix {i + 1}: {residual:.1f} m&quot;)
+
+# Check survey quality
+if solution[&quot;rms_residual&quot;] &lt; 10:
+    quality = &quot;Excellent&quot;
+elif solution[&quot;rms_residual&quot;] &lt; 50:
+    quality = &quot;Good&quot;
+elif solution[&quot;rms_residual&quot;] &lt; 100:
+    quality = &quot;Fair&quot;
+else:
+    quality = &quot;Poor&quot;
+
+print(f&quot;\nSurvey quality: {quality}&quot;)
+print(&quot;=&quot; * 60)
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Processing survey data for dsG1:
+Deployment: 65.59033°N, -29.45783°W (65°35.42&#39;N, 29°27.47&#39;W)
+Fix 1: 65.58776°N, -29.45075°W (65°35.27&#39;N, 29°27.04&#39;W) - Range: 936m
+Fix 2: 65.59428°N, -29.45878°W (65°35.66&#39;N, 29°27.53&#39;W) - Range: 900m
+Fix 3: 65.58891°N, -29.46695°W (65°35.33&#39;N, 29°28.02&#39;W) - Range: 755m
+Fix 4: 65.58814°N, -29.47093°W (65°35.29&#39;N, 29°28.26&#39;W) - Range: 850m
+
+Survey parameters:
+  Water depth: 690m
+  Release height: 7m
+  Transducer depth: 7.7m
+  Sound speed: 1490m/s
+
+Solving trilateration...
+
+============================================================
+ANCHOR POSITION RESULTS FOR dsG1
+============================================================
+Decimal degrees: 65.589775°N, -29.462412°W
+Degrees/minutes: 65°35.39&#39;N, 29°27.74&#39;W
+
+Quality metrics:
+  Fallback distance: 220 m
+  Max residual error: 87.4 m
+  RMS residual error: 65.3 m
+
+Individual fix residuals:
+  Fix 1: 49.5 m
+  Fix 2: 50.1 m
+  Fix 3: 87.4 m
+  Fix 4: 66.8 m
+
+Survey quality: Fair
+============================================================
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>from trilatmoor import plot_trilateration_survey
+
+import matplotlib.pyplot as plt
+
+bathymetry_path = &quot;../../cruiseplan/data/bathymetry/GEBCO_2025.nc&quot;
+fig = plot_trilateration_survey(triang_data, solution, bathymetry=bathymetry_path)
+plt.show()
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/demo_G1-output_4_0.png" src="_images/demo_G1-output_4_0.png" />
+</div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="bathymetry.html" class="btn btn-neutral float-left" title="Bathymetry" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

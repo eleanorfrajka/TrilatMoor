@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bathymetry &mdash; trilatmoor 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ac824072" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Demo notebook snippet for manual trilateration input." href="demo_G1-output.html" />
+    <link rel="prev" title="Interpreting results" href="interpreting-results.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            trilatmoor
+              <img src="_static/trilatmoor_icon.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">Quickstart</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="data-format.html">Survey file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="algorithm.html">Algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interpreting-results.html">Interpreting results</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bathymetry</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#supported-datasets">Supported datasets</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#cli-usage">CLI usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-api-usage">Python API usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#memory-and-performance">Memory and performance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#isobath-levels">Isobath levels</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="demo_G1-output.html">Demo notebook snippet for manual trilateration input.</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor">GitHub repository</a></li>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/eleanorfrajka/TrilatMoor/issues">Issue tracker</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">trilatmoor</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Bathymetry</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/bathymetry.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bathymetry">
+<h1>Bathymetry<a class="headerlink" href="#bathymetry" title="Link to this heading"></a></h1>
+<p>Bathymetry is <strong>optional</strong> — trilatmoor runs without it.  When provided, it
+adds isobath contours to the trilateration plot and reports the GEBCO depth at
+the solved anchor position.</p>
+<section id="supported-datasets">
+<h2>Supported datasets<a class="headerlink" href="#supported-datasets" title="Link to this heading"></a></h2>
+<p>Any NetCDF file that stores a 2-D depth or elevation field on a regular
+lat/lon grid is supported.  The code auto-detects the following variable names:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Role</p></th>
+<th class="head"><p>Accepted names</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Longitude</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lon</span></code>, <code class="docutils literal notranslate"><span class="pre">longitude</span></code>, <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">nav_lon</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Latitude</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">latitude</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">nav_lat</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>Depth / elevation</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">depth</span></code>, <code class="docutils literal notranslate"><span class="pre">elevation</span></code>, <code class="docutils literal notranslate"><span class="pre">z</span></code>, <code class="docutils literal notranslate"><span class="pre">bathymetry</span></code>, <code class="docutils literal notranslate"><span class="pre">topo</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<p>The loader signs depths as <strong>positive downward</strong> (ocean floor positive).  If
+the file stores negative elevations (the GEBCO convention, where ocean is
+negative), the signs are flipped automatically.</p>
+<p>Coordinate axes may be in ascending or descending order — both are handled.</p>
+<p><strong>Recommended source:</strong> <a class="reference external" href="https://www.gebco.net/">GEBCO 2025</a> global
+15-arcsecond bathymetric grid (~2 GB NetCDF file).</p>
+</section>
+<section id="cli-usage">
+<h2>CLI usage<a class="headerlink" href="#cli-usage" title="Link to this heading"></a></h2>
+<p>Point to a directory containing the NetCDF file and specify the source name:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>trilatmoor<span class="w"> </span>-c<span class="w"> </span>survey.txt<span class="w"> </span>-o<span class="w"> </span>results/<span class="w"> </span>--output<span class="w"> </span>dsG1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bathy-dir<span class="w"> </span>/data/bathymetry<span class="w"> </span>--bathy-source<span class="w"> </span>gebco2025
+</pre></div>
+</div>
+<p>Recognised <code class="docutils literal notranslate"><span class="pre">--bathy-source</span></code> values and the filename patterns they match:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Source</p></th>
+<th class="head"><p>Filename patterns</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gebco2025</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GEBCO_2025.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">gebco_2025.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">GEBCO2025.nc</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gebco2023</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GEBCO_2023.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">gebco_2023.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">GEBCO2023.nc</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gebco</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">GEBCO*.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">gebco*.nc</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">etopo</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ETOPO*.nc</span></code>, <code class="docutils literal notranslate"><span class="pre">etopo*.nc</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">auto</span></code></p></td>
+<td><p>first <code class="docutils literal notranslate"><span class="pre">*.nc</span></code> file found</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="python-api-usage">
+<h2>Python API usage<a class="headerlink" href="#python-api-usage" title="Link to this heading"></a></h2>
+<p>Pass the path string directly to <code class="docutils literal notranslate"><span class="pre">plot_trilateration_survey</span></code>; the function
+loads only the regional subset needed for the plot:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">plot_trilateration_survey</span><span class="p">(</span>
+    <span class="n">triang_data</span><span class="p">,</span>
+    <span class="n">solution</span><span class="p">,</span>
+    <span class="n">bathymetry</span><span class="o">=</span><span class="s2">&quot;/data/GEBCO_2025.nc&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Pre-load the regional subset (useful when plotting many surveys from the same
+area):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bathy</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">load_bathymetry_netcdf</span><span class="p">(</span>
+    <span class="s2">&quot;/data/GEBCO_2025.nc&quot;</span><span class="p">,</span>
+    <span class="n">lon_bounds</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">30</span><span class="p">,</span> <span class="o">-</span><span class="mi">28</span><span class="p">),</span>
+    <span class="n">lat_bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">65</span><span class="p">,</span> <span class="mi">67</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">plot_trilateration_survey</span><span class="p">(</span><span class="n">triang_data</span><span class="p">,</span> <span class="n">solution</span><span class="p">,</span> <span class="n">bathymetry</span><span class="o">=</span><span class="n">bathy</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Query depth at a single point:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">depth</span> <span class="o">=</span> <span class="n">trilatmoor</span><span class="o">.</span><span class="n">query_depth_at_position</span><span class="p">(</span>
+    <span class="s2">&quot;/data/GEBCO_2025.nc&quot;</span><span class="p">,</span>
+    <span class="n">lat</span><span class="o">=</span><span class="mf">65.590</span><span class="p">,</span>
+    <span class="n">lon</span><span class="o">=-</span><span class="mf">29.462</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-and-performance">
+<h2>Memory and performance<a class="headerlink" href="#memory-and-performance" title="Link to this heading"></a></h2>
+<p>Loading a global GEBCO file into memory (~2 GB) is unnecessary and slow.
+When a path string is passed, <code class="docutils literal notranslate"><span class="pre">plot_trilateration_survey</span></code> automatically loads
+only the regional subset around the survey area (0.5° margin) using xarray
+lazy evaluation, so only the relevant data pages are read from disk.</p>
+<p><code class="docutils literal notranslate"><span class="pre">query_depth_at_position</span></code> is even more efficient: it reads only the coordinate
+arrays and a single grid cell.</p>
+</section>
+<section id="isobath-levels">
+<h2>Isobath levels<a class="headerlink" href="#isobath-levels" title="Link to this heading"></a></h2>
+<p>Contour levels are chosen automatically based on the anchor water depth.
+The code uses coarse 200 m spacing for the full loaded region, supplemented by
+finer 50 m spacing within ±200 m of the anchor depth — ensuring that the
+nearest isobath to the deployment site is always included in the plot.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="interpreting-results.html" class="btn btn-neutral float-left" title="Interpreting results" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo_G1-output.html" class="btn btn-neutral float-right" title="Demo notebook snippet for manual trilateration input." accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Eleanor Frajka-Williams.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
