@@ -11,6 +11,81 @@ from typing import Dict, List, Optional, Tuple, Union
 from .utilities import vincenty_forward
 
 
+def query_depth_at_position(netcdf_path: str, lat: float, lon: float) -> Optional[float]:
+    """Query bathymetric depth at a specific lat/lon from a NetCDF file.
+
+    Uses xarray lazy loading and nearest-neighbour selection. Reads only the
+    coordinate arrays and a single grid cell, so it is efficient even for
+    large global files such as GEBCO.
+
+    Parameters
+    ----------
+    netcdf_path : str
+        Path to NetCDF bathymetry file (e.g. GEBCO_2025.nc)
+    lat : float
+        Latitude in decimal degrees
+    lon : float
+        Longitude in decimal degrees
+
+    Returns
+    -------
+    float or None
+        Water depth in metres (positive = below sea surface), or None if the
+        lookup fails (bad path, land point, NaN, out-of-bounds, etc.)
+
+    """
+    try:
+        import xarray as xr
+    except ImportError:
+        return None
+
+    try:
+        ds = xr.open_dataset(netcdf_path)
+
+        lon_vars = ["lon", "longitude", "x", "nav_lon"]
+        lat_vars = ["lat", "latitude", "y", "nav_lat"]
+        depth_vars = ["depth", "elevation", "z", "bathymetry", "topo"]
+
+        lon_var = next((v for v in lon_vars if v in ds.variables), None)
+        lat_var = next((v for v in lat_vars if v in ds.variables), None)
+        depth_var = next((v for v in depth_vars if v in ds.variables), None)
+
+        if lon_var is None or lat_var is None or depth_var is None:
+            ds.close()
+            return None
+
+        value = (
+            ds[depth_var]
+            .sel({lat_var: lat, lon_var: lon}, method="nearest")
+            .values.item()
+        )
+        ds.close()
+
+        if np.isnan(value):
+            return None
+
+        # GEBCO uses negative elevation for ocean; return positive depth.
+        return float(abs(value))
+
+    except Exception:
+        return None
+
+
+def _extract_depth_from_dict(bathymetry: dict, lat: float, lon: float) -> Optional[float]:
+    """Nearest-neighbour depth lookup from an already-loaded bathymetry dict."""
+    lat_arr = bathymetry["lat"]
+    lon_arr = bathymetry["lon"]
+    depth_arr = bathymetry["depth"]
+
+    if len(lat_arr) == 0 or len(lon_arr) == 0:
+        return None
+
+    lat_idx = int(np.argmin(np.abs(lat_arr - lat)))
+    lon_idx = int(np.argmin(np.abs(lon_arr - lon)))
+    value = float(depth_arr[lat_idx, lon_idx])
+    return None if np.isnan(value) else abs(value)
+
+
 def load_bathymetry_netcdf_subsampled(
     netcdf_path: str, lon_bounds: tuple, lat_bounds: tuple, subsample: int = 5
 ) -> dict:
@@ -122,13 +197,22 @@ def load_bathymetry_netcdf_subsampled(
     return {"lon": lon, "lat": lat, "depth": depth}
 
 
-def load_bathymetry_netcdf(netcdf_path: str) -> dict:
+def load_bathymetry_netcdf(
+    netcdf_path: str,
+    lon_bounds: Optional[Tuple[float, float]] = None,
+    lat_bounds: Optional[Tuple[float, float]] = None,
+) -> dict:
     """Load bathymetry data from NetCDF file.
 
     Parameters
     ----------
     netcdf_path : str
         Path to NetCDF bathymetry file
+    lon_bounds : tuple, optional
+        (min_lon, max_lon) to load only a regional subset. Strongly recommended
+        for large global files such as GEBCO to avoid reading the full file.
+    lat_bounds : tuple, optional
+        (min_lat, max_lat) to load only a regional subset.
 
     Returns
     -------
@@ -176,6 +260,25 @@ def load_bathymetry_netcdf(netcdf_path: str) -> dict:
             f"Could not find coordinate/depth variables in NetCDF file. "
             f"Available variables: {list(ds.variables.keys())}"
         )
+
+    # Subset to region before loading into memory — critical for large global files.
+    # Some files store lat descending (90→−90); slice() must match the axis order.
+    if lon_bounds is not None and lat_bounds is not None:
+        lat_vals = ds[lat_var].values
+        lon_vals = ds[lon_var].values
+        lat_desc = len(lat_vals) > 1 and float(lat_vals[0]) > float(lat_vals[-1])
+        lon_desc = len(lon_vals) > 1 and float(lon_vals[0]) > float(lon_vals[-1])
+        lat_slice = (
+            slice(lat_bounds[1], lat_bounds[0])
+            if lat_desc
+            else slice(lat_bounds[0], lat_bounds[1])
+        )
+        lon_slice = (
+            slice(lon_bounds[1], lon_bounds[0])
+            if lon_desc
+            else slice(lon_bounds[0], lon_bounds[1])
+        )
+        ds = ds.sel({lon_var: lon_slice, lat_var: lat_slice})
 
     # Extract data
     lon = ds[lon_var].values
@@ -357,6 +460,9 @@ def plot_trilateration_survey(
     ship_track: Optional[dict] = None,
     bathymetry: Optional[Union[dict, str]] = None,
     save_figure: Optional[str] = None,
+    figsize: Tuple[int, int] = (10, 8),
+    no_title: bool = False,
+    no_legend: bool = False,
 ) -> plt.Figure:
     """Create trilateration survey plot showing ship positions, range circles, and solution.
 
@@ -387,16 +493,10 @@ def plot_trilateration_survey(
     deploy_lat = triang_data["latitudes"][0]
     deploy_lon = triang_data["longitudes"][0]
 
-    # Handle bathymetry parameter
-    if isinstance(bathymetry, str):
-        # Load bathymetry from NetCDF file
-        bathymetry = load_bathymetry_netcdf(bathymetry)
-
-    # Calculate plot bounds based on triangulation area and range circles
+    # Calculate plot bounds first — needed to load only the regional bathymetry subset
     from .utilities import horizontal_range
     import numpy as np
 
-    # Get the maximum horizontal range to determine plot scale
     max_range = 0
     for i, range_val in enumerate(triang_data["ranges"]):
         if range_val > 0:
@@ -408,43 +508,81 @@ def plot_trilateration_survey(
             )
             max_range = max(max_range, h_range)
 
-    # Use range circles to set appropriate bounds
     if max_range > 0:
-        # Convert range to approximate degrees (rough approximation)
-        range_deg_lat = max_range / 111320  # meters to degrees latitude
-        range_deg_lon = max_range / (
-            111320 * np.cos(np.radians(anchor_lat))
-        )  # account for longitude compression
-
-        # Set bounds based on anchor position and max range + margin
-        margin_factor = 1.2  # 20% margin beyond max range
+        range_deg_lat = max_range / 111320
+        range_deg_lon = max_range / (111320 * np.cos(np.radians(anchor_lat)))
+        margin_factor = 1.2
         lat_margin = range_deg_lat * margin_factor
         lon_margin = range_deg_lon * margin_factor
-
         west = anchor_lon - lon_margin
         east = anchor_lon + lon_margin
         south = anchor_lat - lat_margin
         north = anchor_lat + lat_margin
     else:
-        # Fallback to original method if no ranges
         all_lons = triang_data["longitudes"] + [anchor_lon, deploy_lon]
         all_lats = triang_data["latitudes"] + [anchor_lat, deploy_lat]
-
         lat_range = max(all_lats) - min(all_lats)
         lon_range = max(all_lons) - min(all_lons)
-        margin = max(lat_range, lon_range, 0.01) * 2  # Ensure minimum margin
-
+        margin = max(lat_range, lon_range, 0.01) * 2
         west = min(all_lons) - margin
         east = max(all_lons) + margin
         south = min(all_lats) - margin
         north = max(all_lats) + margin
 
-    # Create figure
-    fig, ax = plt.subplots(figsize=(10, 8))
+    # Expand bounds to fill figsize with geographically correct proportions so
+    # that set_aspect(adjustable='box') fills the axes without shrinking it.
+    _center_lon = (west + east) / 2
+    _center_lat = (south + north) / 2
+    _cos_lat = np.cos(np.radians(_center_lat))
+    _lon_half = (east - west) / 2
+    _lat_half = (north - south) / 2
+    _fig_w, _fig_h = figsize if figsize else (10, 8)
+    _fig_aspect = _fig_w / _fig_h
+    _geo_aspect = (_lon_half * _cos_lat) / _lat_half
+    if _geo_aspect < _fig_aspect:
+        _lon_half = _lat_half * _fig_aspect / _cos_lat
+    else:
+        _lat_half = _lon_half * _cos_lat / _fig_aspect
+    west  = _center_lon - _lon_half
+    east  = _center_lon + _lon_half
+    south = _center_lat - _lat_half
+    north = _center_lat + _lat_half
 
-    # Plot bathymetry if provided
+    # Handle bathymetry parameter — load only the regional subset for efficiency.
+    # Use a generous margin so contour lines that originate outside the plot area
+    # are computed fully and then clipped cleanly at the axes boundary.
+    gebco_depth = None
+    _bathy_margin = 0.5  # degrees beyond plot bounds
+    if isinstance(bathymetry, str):
+        gebco_depth = query_depth_at_position(bathymetry, anchor_lat, anchor_lon)
+        bathymetry = load_bathymetry_netcdf(
+            bathymetry,
+            lon_bounds=(west - _bathy_margin, east + _bathy_margin),
+            lat_bounds=(south - _bathy_margin, north + _bathy_margin),
+        )
+    elif isinstance(bathymetry, dict):
+        gebco_depth = _extract_depth_from_dict(bathymetry, anchor_lat, anchor_lon)
+
+    # Create figure with constrained layout so decorations (title, labels,
+    # legend) are handled before the axes size is determined, which lets
+    # set_aspect work correctly without shrinking the axes to a tiny square.
+    fig, ax = plt.subplots(figsize=figsize, layout="constrained")
+
+    # Compute contours over a region slightly wider than the tight display so
+    # the marching-squares path is complete and clips cleanly at the axes limits.
+    # Using the full _bathy_margin (0.5°) makes the isobath a multi-thousand-vertex
+    # global path whose tight-area segment can vanish; a modest margin (0.05°, ≈5km)
+    # gives ~12 extra GEBCO cells per side — enough for well-formed paths without
+    # changing the isobath topology relative to the display area.
+    _contour_margin = 0.05
     if bathymetry is not None:
-        _plot_bathymetry(ax, bathymetry, [west, east], [south, north])
+        _anchor_depth = triang_data.get("water_depth_anchor_launch")
+        _plot_bathymetry(
+            ax, bathymetry,
+            [west - _contour_margin, east + _contour_margin],
+            [south - _contour_margin, north + _contour_margin],
+            anchor_depth=_anchor_depth,
+        )
 
     # Plot ship track if provided (only the portion visible in current bounds)
     if ship_track is not None:
@@ -531,27 +669,31 @@ def plot_trilateration_survey(
     # Formatting
     ax.set_xlim(west, east)
     ax.set_ylim(south, north)
+    ax.set_aspect(1.0 / np.cos(np.radians(anchor_lat)))
     ax.grid(True, alpha=0.3)
     ax.set_xlabel("Longitude")
     ax.set_ylabel("Latitude")
-    ax.legend()
+    if not no_legend:
+        ax.legend(loc="lower right")
 
-    # Title with key information
-    loc_name = triang_data["loc_name"]
-    water_depth = triang_data["water_depth_anchor_launch"]
-    release_height = triang_data["release_height"]
-    transducer_depth = triang_data["transducer_depth"]
-
-    title1 = f"Trilateration: {loc_name}"
-    title2 = f"Water depth: {water_depth:.0f}m, Release height: {release_height:.0f}m, Transducer: {transducer_depth:.0f}m"
-    title3 = f'Max error: {solution["max_residual"]:.1f}m, RMS error: {solution["rms_residual"]:.1f}m'
-
-    ax.set_title(f"{title1}\n{title2}\n{title3}", pad=20)
+    if not no_title:
+        loc_name = triang_data["loc_name"]
+        water_depth = triang_data["water_depth_anchor_launch"]
+        release_height = triang_data["release_height"]
+        transducer_depth = triang_data["transducer_depth"]
+        title1 = f"Trilateration: {loc_name}"
+        if gebco_depth is not None:
+            title2 = (
+                f"Launch depth: {water_depth:.0f}m, GEBCO: {gebco_depth:.0f}m, "
+                f"Release height: {release_height:.0f}m, Transducer: {transducer_depth:.0f}m"
+            )
+        else:
+            title2 = f"Water depth: {water_depth:.0f}m, Release height: {release_height:.0f}m, Transducer: {transducer_depth:.0f}m"
+        title3 = f'Max error: {solution["max_residual"]:.1f}m, RMS error: {solution["rms_residual"]:.1f}m'
+        ax.set_title(f"{title1}\n{title2}\n{title3}", pad=20)
 
     # Format axis ticks to degrees/minutes
     _format_coordinate_ticks(ax)
-
-    plt.tight_layout(pad=2.0)
 
     # Save if requested
     if save_figure:
@@ -561,7 +703,13 @@ def plot_trilateration_survey(
     return fig
 
 
-def _plot_bathymetry(ax, bathymetry: dict, lon_lim: List[float], lat_lim: List[float]):
+def _plot_bathymetry(
+    ax,
+    bathymetry: dict,
+    lon_lim: List[float],
+    lat_lim: List[float],
+    anchor_depth: Optional[float] = None,
+):
     """Plot bathymetry contours."""
     # Find indices within plot bounds
     lon_idx = np.where(
@@ -577,12 +725,20 @@ def _plot_bathymetry(ax, bathymetry: dict, lon_lim: List[float], lat_lim: List[f
         )
         depth_subset = bathymetry["depth"][np.ix_(lat_idx, lon_idx)]
 
-        # Specific isobath levels
-        isobath_levels = [600, 700, 800, 900, 1000, 1100]
-
-        # Filter levels to only those within the data range
         depth_min = np.nanmin(depth_subset)
         depth_max = np.nanmax(depth_subset)
+
+        # Build isobath levels: coarse coverage of the full loaded region plus
+        # 50 m-spaced levels around the anchor depth so the nearest isobath to
+        # the deployment site is always included.
+        coarse = list(range(200, 6001, 200))
+        if anchor_depth is not None:
+            centre = round(anchor_depth / 50) * 50
+            fine = list(range(max(50, centre - 200), centre + 251, 50))
+        else:
+            fine = []
+        isobath_levels = sorted(set(coarse + fine))
+
         valid_levels = [
             level for level in isobath_levels if depth_min <= level <= depth_max
         ]
@@ -687,35 +843,42 @@ def _add_position_labels(ax, triang_data: dict, solution: dict):
     )
 
 
-def _format_coordinate_ticks(ax):
-    """Format axis ticks to show degrees and minutes."""
+def _format_coordinate_ticks(ax, max_xticks: int = 5, max_yticks: int = 6):
+    """Format axis ticks as degrees/minutes with hemisphere labels.
+
+    Limits tick count via MaxNLocator to prevent label overlap, and rotates
+    x-axis labels 45° because longitude strings are wider than plain numbers.
+    """
     from .utilities import dec2deg
+    from matplotlib.ticker import MaxNLocator
 
-    # Format latitude ticks
-    yticks = ax.get_yticks()
-    yticklabels = []
-    for tick in yticks:
-        if tick != 0:
-            _, _, deg_str = dec2deg(abs(tick))
-            hemisphere = "N" if tick >= 0 else "S"
-            yticklabels.append(f"{deg_str}{hemisphere}")
+    def _coord_label(value: float, is_lon: bool) -> str:
+        if value == 0:
+            return "0°"
+        _, _, deg_str = dec2deg(abs(value))
+        if is_lon:
+            hemi = "E" if value >= 0 else "W"
         else:
-            yticklabels.append("0°")
+            hemi = "N" if value >= 0 else "S"
+        return f"{deg_str}{hemi}"
+
+    # Latitude (y): limit tick count, keep labels horizontal
+    ax.yaxis.set_major_locator(MaxNLocator(nbins=max_yticks, prune="both"))
+    ylim = ax.get_ylim()
+    yticks = [t for t in ax.get_yticks() if ylim[0] <= t <= ylim[1]]
     ax.set_yticks(yticks)
-    ax.set_yticklabels(yticklabels)
+    ax.set_yticklabels([_coord_label(t, is_lon=False) for t in yticks])
 
-    # Format longitude ticks
-    xticks = ax.get_xticks()
-    xticklabels = []
-    for tick in xticks:
-        if tick != 0:
-            _, _, deg_str = dec2deg(abs(tick))
-            hemisphere = "E" if tick >= 0 else "W"
-            xticklabels.append(f"{deg_str}{hemisphere}")
-        else:
-            xticklabels.append("0°")
+    # Longitude (x): limit tick count, rotate to avoid overlap
+    ax.xaxis.set_major_locator(MaxNLocator(nbins=max_xticks, prune="both"))
+    xlim = ax.get_xlim()
+    xticks = [t for t in ax.get_xticks() if xlim[0] <= t <= xlim[1]]
     ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels)
+    ax.set_xticklabels(
+        [_coord_label(t, is_lon=True) for t in xticks],
+        rotation=30,
+        ha="right",
+    )
 
 
 def save_cropped_figure(fig: plt.Figure, filename: str, margin: int = 10):
@@ -862,6 +1025,8 @@ def plot_multiple_solutions(
     ship_track_path: Optional[str] = None,
     figsize: Tuple[int, int] = (10, 8),
     colors: Optional[List[str]] = None,
+    no_title: bool = False,
+    no_legend: bool = False,
 ) -> plt.Figure:
     """Plot multiple trilateration solutions on a single figure.
 
@@ -1042,17 +1207,268 @@ def plot_multiple_solutions(
     lat_lon_ratio = 1.0 / np.cos(np.radians(center_lat))
     ax.set_aspect(lat_lon_ratio)
 
-    ax.set_title(
-        "Multi-Survey Trilateration Results\n"
-        "Range circles (○), deployment positions (□), anchor positions (★)",
-        fontsize=12,
-        fontweight="bold",
-        pad=20,
-    )
+    if not no_title:
+        ax.set_title(
+            "Multi-Survey Trilateration Results\n"
+            "Range circles (○), deployment positions (□), anchor positions (★)",
+            fontsize=12,
+            fontweight="bold",
+            pad=20,
+        )
 
-    ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    _format_coordinate_ticks(ax)
+    if not no_legend:
+        ax.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
     plt.tight_layout()
 
+    return fig
+
+
+def plot_survey_grid(
+    solutions: List[Tuple[str, Dict, Dict]],
+    bathymetry_path: Optional[str] = None,
+    figsize: Optional[Tuple[int, int]] = None,
+    colors: Optional[List[str]] = None,
+    no_title: bool = False,
+    no_legend: bool = False,
+) -> plt.Figure:
+    """Create a grid figure with an overview map on top and per-mooring subplots below.
+
+    Parameters
+    ----------
+    solutions : list of tuple
+        List of (loc_name, triang_data, solution) tuples
+    bathymetry_path : str, optional
+        Path to bathymetry NetCDF file
+    figsize : tuple, optional
+        Figure size (width, height). Defaults to (20, 6 + 5 * n_subplot_rows).
+    colors : list of str, optional
+        Colors for each survey. If None, uses default colors.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        The figure object
+
+    """
+    from matplotlib.gridspec import GridSpec
+
+    if colors is None:
+        colors = ["red", "blue", "green", "orange", "purple", "brown"]
+
+    if not solutions:
+        raise ValueError("No solutions provided")
+
+    n = len(solutions)
+    n_cols = min(n, 3)
+    n_subplot_rows = (n + 2) // 3  # ceil(n / 3)
+    n_rows = 1 + n_subplot_rows
+
+    if figsize is None:
+        figsize = (20, 6 + 5 * n_subplot_rows)
+
+    fig = plt.figure(figsize=figsize)
+    gs = GridSpec(n_rows, n_cols, figure=fig, hspace=0.35, wspace=0.3)
+
+    # --- Overview panel (top row, full width) ---
+    ax_main = fig.add_subplot(gs[0, :])
+
+    all_lons: List[float] = []
+    all_lats: List[float] = []
+    for _, triang_data, solution in solutions:
+        all_lons.extend(triang_data["longitudes"])
+        all_lats.extend(triang_data["latitudes"])
+        all_lons.append(solution["anchor_lon"])
+        all_lats.append(solution["anchor_lat"])
+
+    lat_range = max(all_lats) - min(all_lats)
+    lon_range = max(all_lons) - min(all_lons)
+    margin = 0.1
+    lat_margin = lat_range * margin if lat_range > 0 else 0.01
+    lon_margin = lon_range * margin if lon_range > 0 else 0.01
+    west = min(all_lons) - lon_margin
+    east = max(all_lons) + lon_margin
+    south = min(all_lats) - lat_margin
+    north = max(all_lats) + lat_margin
+
+    if bathymetry_path and os.path.exists(bathymetry_path):
+        try:
+            bathy = load_bathymetry_netcdf_subsampled(
+                bathymetry_path,
+                lon_bounds=(west - 1, east + 1),
+                lat_bounds=(south - 1, north + 1),
+                subsample=2,
+            )
+            if len(bathy["lon"]) > 0 and len(bathy["lat"]) > 0:
+                lon_grid, lat_grid = np.meshgrid(bathy["lon"], bathy["lat"])
+                depth_min = np.nanmin(bathy["depth"])
+                depth_max = np.nanmax(bathy["depth"])
+                isobath_levels = [
+                    lv
+                    for lv in [600, 700, 800, 900, 1000, 1100]
+                    if depth_min <= lv <= depth_max
+                ]
+                if isobath_levels:
+                    cs = ax_main.contour(
+                        lon_grid,
+                        lat_grid,
+                        bathy["depth"],
+                        levels=isobath_levels,
+                        colors="black",
+                        alpha=0.7,
+                        linewidths=1.0,
+                    )
+                    ax_main.clabel(cs, inline=True, fontsize=9, fmt="%0.0fm")
+        except Exception as e:
+            print(f"Could not load bathymetry: {e}")
+
+    for i, (loc_name, triang_data, solution) in enumerate(solutions):
+        color = colors[i % len(colors)]
+        _plot_multi_range_circles(ax_main, triang_data, color)
+        deploy_lat = triang_data["latitudes"][0]
+        deploy_lon = triang_data["longitudes"][0]
+        ax_main.plot(
+            deploy_lon,
+            deploy_lat,
+            "s",
+            color=color,
+            markersize=8,
+            markeredgecolor="black",
+            markeredgewidth=1,
+            label=f"{loc_name} - Deployment",
+        )
+        anchor_lat = solution["anchor_lat"]
+        anchor_lon = solution["anchor_lon"]
+        ax_main.plot(
+            anchor_lon,
+            anchor_lat,
+            "*",
+            color=color,
+            markersize=12,
+            markeredgecolor="black",
+            markeredgewidth=1,
+            label=f"{loc_name} - Anchor",
+        )
+        ax_main.plot(
+            [deploy_lon, anchor_lon],
+            [deploy_lat, anchor_lat],
+            "--",
+            color=color,
+            linewidth=2,
+            alpha=0.8,
+        )
+
+    ax_main.set_xlim(west, east)
+    ax_main.set_ylim(south, north)
+    center_lat = (south + north) / 2
+    ax_main.set_aspect(1.0 / np.cos(np.radians(center_lat)))
+    ax_main.grid(True, alpha=0.3)
+    ax_main.set_xlabel("Longitude", fontsize=12)
+    ax_main.set_ylabel("Latitude", fontsize=12)
+    if not no_title:
+        ax_main.set_title(
+            "Trilateration Survey Overview\n"
+            "Range circles (○), deployment positions (□), anchor positions (★)",
+            fontsize=12,
+            fontweight="bold",
+            pad=10,
+        )
+    _format_coordinate_ticks(ax_main)
+    if not no_legend:
+        ax_main.legend(bbox_to_anchor=(1.02, 1), loc="upper left", fontsize=9)
+
+    # --- Individual per-mooring subplots (bottom rows) ---
+    for i, (loc_name, triang_data, solution) in enumerate(solutions):
+        row = 1 + i // n_cols
+        col = i % n_cols
+        ax = fig.add_subplot(gs[row, col])
+        color = colors[i % len(colors)]
+
+        _plot_multi_range_circles(ax, triang_data, color)
+
+        deploy_lat = triang_data["latitudes"][0]
+        deploy_lon = triang_data["longitudes"][0]
+        anchor_lat = solution["anchor_lat"]
+        anchor_lon = solution["anchor_lon"]
+
+        ax.plot(
+            deploy_lon,
+            deploy_lat,
+            "s",
+            color=color,
+            markersize=8,
+            markeredgecolor="black",
+            markeredgewidth=1,
+            label="Deployment",
+        )
+        ax.plot(
+            anchor_lon,
+            anchor_lat,
+            "*",
+            color="black",
+            markersize=10,
+            markeredgewidth=1,
+            label="Anchor",
+        )
+        ax.plot(
+            [deploy_lon, anchor_lon],
+            [deploy_lat, anchor_lat],
+            "--",
+            color=color,
+            linewidth=1.5,
+            alpha=0.8,
+        )
+
+        # Auto-bounds around anchor with margin from max range
+        from .utilities import horizontal_range as _horiz_range
+
+        max_h = max(
+            (
+                _horiz_range(
+                    r,
+                    triang_data["water_depth_anchor_launch"],
+                    triang_data["release_height"],
+                    triang_data["transducer_depth"],
+                )
+                for r in triang_data["ranges"]
+                if r > 0
+            ),
+            default=2000,
+        )
+        pad_deg_lat = max_h / 111320 * 1.3
+        pad_deg_lon = pad_deg_lat / np.cos(np.radians(anchor_lat))
+        ax.set_xlim(anchor_lon - pad_deg_lon, anchor_lon + pad_deg_lon)
+        ax.set_ylim(anchor_lat - pad_deg_lat, anchor_lat + pad_deg_lat)
+        ax.set_aspect(1.0 / np.cos(np.radians(anchor_lat)))
+
+        rms = solution["rms_residual"]
+        fallback = solution["fallback_distance"]
+        if rms < 10:
+            quality = "Excellent"
+        elif rms < 50:
+            quality = "Good"
+        elif rms < 100:
+            quality = "Fair"
+        else:
+            quality = "Poor"
+        ax.text(
+            0.02,
+            0.98,
+            f"RMS: {rms:.1f} m\nFallback: {fallback:.0f} m\nQuality: {quality}",
+            transform=ax.transAxes,
+            verticalalignment="top",
+            fontsize=8,
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.8),
+        )
+
+        if not no_title:
+            ax.set_title(loc_name, fontsize=10, fontweight="bold")
+        ax.grid(True, alpha=0.3)
+        _format_coordinate_ticks(ax)
+        if not no_legend:
+            ax.legend(fontsize=7, loc="lower right")
+
+    plt.tight_layout()
     return fig
 
 
@@ -1063,6 +1479,8 @@ def plot_multiple_surveys(
     sound_speed: Optional[float] = None,
     figsize: Tuple[int, int] = (10, 8),
     colors: Optional[List[str]] = None,
+    no_title: bool = False,
+    no_legend: bool = False,
 ) -> Tuple[plt.Figure, List[Tuple]]:
     """Plot multiple trilateration surveys on a single figure (wrapper function).
 
@@ -1071,25 +1489,30 @@ def plot_multiple_surveys(
     Parameters
     ----------
     survey_files : list of str
-        List of paths to survey data files
+        List of paths to survey data files.
     bathymetry_path : str, optional
-        Path to bathymetry NetCDF file
+        Path to bathymetry NetCDF file.
+    ship_track_path : str, optional
+        Path to ship track NetCDF file.
     sound_speed : float, optional
-        Override sound speed for all surveys
+        Override sound speed for all surveys.
     figsize : tuple, optional
-        Figure size (width, height)
+        Figure size (width, height).
     colors : list of str, optional
-        Colors for each survey. If None, uses default colors
+        Colors for each survey. If None, uses default colors.
+    no_title : bool
+        Omit the figure title.
+    no_legend : bool
+        Omit the figure legend.
 
     Returns
     -------
     fig : matplotlib.figure.Figure
-        The figure object
+        The figure object.
     survey_results : list of tuple
-        List of (loc_name, triang_data, solution) for each survey
+        List of (loc_name, triang_data, solution) for each survey.
 
     """
-    # Process all survey files
     survey_results = []
     for file_path in survey_files:
         try:
@@ -1102,9 +1525,14 @@ def plot_multiple_surveys(
     if not survey_results:
         raise ValueError("No valid survey data processed")
 
-    # Use the core plotting function
     fig = plot_multiple_solutions(
-        survey_results, bathymetry_path, ship_track_path, figsize, colors
+        survey_results,
+        bathymetry_path,
+        ship_track_path,
+        figsize,
+        colors,
+        no_title=no_title,
+        no_legend=no_legend,
     )
 
     return fig, survey_results

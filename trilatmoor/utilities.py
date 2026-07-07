@@ -6,7 +6,6 @@ Based on MATLAB m_map functions using Vincenty's algorithms for high accuracy.
 import numpy as np
 import math
 
-
 # WGS84 ellipsoid parameters
 WGS84_A = 6378137.0  # Semi-major axis (meters)
 WGS84_F = 1 / 298.257223563  # Flattening

@@ -16,6 +16,7 @@ from .utilities import (
 from .read_dship import parse_triangulation_file
 from .plotting import (
     plot_trilateration_survey,
+    plot_survey_grid,
     save_cropped_figure,
     load_bathymetry_netcdf,
     load_bathymetry_netcdf_subsampled,
@@ -24,6 +25,7 @@ from .plotting import (
     plot_multiple_solutions,
     process_survey_file,
     parse_survey_file,
+    query_depth_at_position,
 )
 
 __version__ = "0.1.0"
@@ -37,6 +39,7 @@ __all__ = [
     "horizontal_range",
     "parse_triangulation_file",
     "plot_trilateration_survey",
+    "plot_survey_grid",
     "save_cropped_figure",
     "load_bathymetry_netcdf",
     "load_bathymetry_netcdf_subsampled",
@@ -45,4 +48,5 @@ __all__ = [
     "plot_multiple_solutions",
     "process_survey_file",
     "parse_survey_file",
+    "query_depth_at_position",
 ]
